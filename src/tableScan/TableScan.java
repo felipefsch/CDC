@@ -67,9 +67,7 @@ public class TableScan extends Configured implements Tool{
 	    
 	    public static void main(String... args) throws Exception
 	    {	
-	    	//String path = args.length > 0 ? args[0] : "./CDC.properties";
-
-	    	String path = "./CDC.properties";
+	    	String path = args.length > 0 ? args[0] : "./CDC.properties";
 	    	
 	    	System.out.println("Properties loaded from: " + path);
 	    	
@@ -87,10 +85,10 @@ public class TableScan extends Configured implements Tool{
 	    	IS_SUPER = prop.getProperty("cassandra.is_super_cf");
 	    	
 	    	if (IS_SUPER.equals("true")){
-	    		COLUMNS = Utils.standardColumnNames(path);
+	    		COLUMNS = Utils.superColumnNames(path);
 	    	}
 	    	else {
-	    		COLUMNS = Utils.superColumnNames(path);
+	    		COLUMNS = Utils.standardColumnNames(path);
 	    	}
 	    	
 	        // Let ToolRunner handle generic command-line options
@@ -121,7 +119,6 @@ public class TableScan extends Configured implements Tool{
 	        			listColumnNames.add(columnName);
 	        		}
 	        	}
-
 	        }        
 
 	        @Override
@@ -181,7 +178,6 @@ public class TableScan extends Configured implements Tool{
 	        			listColumnNames.add(columnName);
 	        		}
 	        	}
-
 	        }        
 
 	        @Override
@@ -239,8 +235,6 @@ public class TableScan extends Configured implements Tool{
 	    		columns.add(ByteBufferUtil.bytes(columnName));
 	    		allColumnNames = columnName + " " + allColumnNames;
 	    	}
-	    	
-	    	System.out.println(allColumnNames);
 	    	
 	        getConf().set(CONF_COLUMN_NAME, allColumnNames);                        
 	        

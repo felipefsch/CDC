@@ -91,10 +91,10 @@ public class Snapshot extends Configured implements Tool
     	IS_SUPER = prop.getProperty("cassandra.is_super_cf");
     	
     	if (IS_SUPER.equals("true")){
-    		COLUMNS = Utils.standardColumnNames(path);
+    		COLUMNS = Utils.superColumnNames(path);
     	}
     	else {
-    		COLUMNS = Utils.superColumnNames(path);
+    		COLUMNS = Utils.standardColumnNames(path);
     	}
     	
         // Let ToolRunner handle generic command-line options

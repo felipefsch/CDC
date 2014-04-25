@@ -46,8 +46,6 @@ public class Utils {
     	String colPrefix = prop.getProperty("cassandra.column_prefix");
     	int numCols = Integer.parseInt(prop.getProperty("cassandra.num_columns"));
     	
-    	System.out.println("Num cols: " + numCols);
-    	
     	ArrayList<String> colNames = new ArrayList<String>();
     	
     	for (int i = 0; i < numCols; i++) {

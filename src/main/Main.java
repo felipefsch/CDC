@@ -22,7 +22,7 @@ public class Main {
 		System.out.println("  -differential              Execute differential");
 		System.out.println("  -createschema              Create Cassandra Schema");
 		System.out.println("");
-		System.out.println("Remember specify all fields in .properties file!!");
+		System.out.println("Remember to specify all fields in .properties file!!");
 	}
 	
 	public static void main (String[] args) throws Exception{
@@ -38,7 +38,7 @@ public class Main {
 
             // use this type of check for "wordy" arguments
             if (arg.equals("-verbose")) {
-                System.out.println("verbose mode on");
+                System.out.println("Verbose mode on");
                 vflag = true;
             }
 
@@ -98,5 +98,6 @@ public class Main {
         	System.out.println("Unknown options\nRun \'cdc -help\' to see a full list of available command line options.");
         else
             System.out.println("Done.");
+        
     }		
 }
