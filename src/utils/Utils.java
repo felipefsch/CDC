@@ -9,6 +9,25 @@ import java.util.Properties;
 
 public class Utils {
 	
+	public static final String CDC = "[CDC] ";
+	
+	/**
+	 * Set into file at current folder the last CDC cycle time. 
+	 */
+	public static void setLastCycle() {
+		
+	}
+
+	/**
+	 * Get last cycle time from current folder file.
+	 * 
+	 * @return lastCycle
+	 */
+	public static long getLastCycle() {
+				
+		return 0;
+	}
+	
 	public static Properties getCassandraProp(String... prop_path) throws Exception {	    	
         String path = prop_path.length > 0 ? prop_path[0] : "./CDC.properties";		
     	Properties props = new Properties();    	

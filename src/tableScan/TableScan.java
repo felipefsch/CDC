@@ -58,6 +58,10 @@ public class TableScan extends Configured implements Tool{
 	    											Arrays.asList("field0", "field1", "field2", "field3", "field4"));
 		
 		private static long LAST_CYCLE = 0;
+		
+		private static boolean VERBOSE = false;
+		
+		private static String CDC = utils.Utils.CDC;
 	/*-----------------------------------------------------------------------------------------------------*/
 		
 		// Don't change this field, it's used to setup the column names before the Mapper
@@ -69,7 +73,9 @@ public class TableScan extends Configured implements Tool{
 	    {	
 	    	String path = args.length > 0 ? args[0] : "./CDC.properties";
 	    	
-	    	System.out.println("Properties loaded from: " + path);
+	    	VERBOSE = args.length > 1 && args[1].equals("-verbose") ? true : false;
+	    	
+	    	System.out.println(CDC + "Properties loaded from: " + path);
 	    	
 	    	prop = Utils.getCassandraProp(path);
 	    		    	    	
@@ -146,7 +152,8 @@ public class TableScan extends Configured implements Tool{
 		                outKeyName.set("upsert/" + KEYSPACE + "/" + COLUMN_FAMILY + "/" + keyName + "/null/" + columnName);
 		                outColumnValue.set(columnValue);
 		                
-		                //System.out.println(outKeyName.toString() + "  " + outColumnValue.toString());
+		                if (VERBOSE)
+		                	System.out.println(CDC + "Key: " + outKeyName.toString() + " value: " + outColumnValue.toString());
 		                
 		                context.write(outKeyName, outColumnValue);
 	                }
@@ -206,8 +213,9 @@ public class TableScan extends Configured implements Tool{
 		                	// Key and value designed to follow the same pattern as the other approaches
 		                    outKeyName.set("upsert/" + KEYSPACE + "/" + COLUMN_FAMILY + "/" + keyName + "/" + superColumnName + "/" + subColumnName);
 		                    outColumnValue.set(subColumnValue);
-		                    
-//		                    System.out.println(outKeyName.toString() + "  " + outColumnValue.toString());                    
+
+		                    if (VERBOSE)
+			                	System.out.println(CDC + "Key: " + outKeyName.toString() + " value: " + outColumnValue.toString());                    
 		                    
 		                    context.write(outKeyName, outColumnValue);
 	                	}
@@ -245,9 +253,15 @@ public class TableScan extends Configured implements Tool{
 	        job.setJarByClass(TableScan.class);
 	        
 	        if (IS_SUPER.equals("true")) {
+	        	if (VERBOSE)
+	        		System.out.println(CDC + "Setting mapper for Super Column Family");
+	        	
 	        	job.setMapperClass(SuperColumnsMapper.class);        	
 	        }
 	        else {
+	        	if (VERBOSE)
+	        		System.out.println(CDC + "Setting mapper for Standard Column Family");
+	        	
 	        	job.setMapperClass(StandardColumnsMapper.class);
 	        }
 	        
@@ -260,7 +274,10 @@ public class TableScan extends Configured implements Tool{
 	        FileSystem fs = FileSystem.get(getConf());
 	        
 	        if (fs.exists(new Path(OUTPUT_PATH))){
-	        	  fs.delete(new Path(OUTPUT_PATH), true);          	  
+	        	if (VERBOSE)
+	        		System.out.println(CDC + "Deleting existing output path: " + OUTPUT_PATH);
+	        	
+	        	fs.delete(new Path(OUTPUT_PATH), true);          	  
 	        }
 	        FileOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));
 
@@ -274,7 +291,7 @@ public class TableScan extends Configured implements Tool{
 	        SlicePredicate predicate = new SlicePredicate().setColumn_names(columns);
 	        ConfigHelper.setInputSlicePredicate(job.getConfiguration(), predicate);
 	     
-	        System.out.println("Waiting to be completed");
+	        System.out.println(CDC + "Waiting to be completed");
 	        
 	        job.waitForCompletion(true);
 	       

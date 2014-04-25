@@ -6,10 +6,14 @@ import snapshotDifferential.Differential;
 import schema.*;
 
 public class Main {
-
+	
+	private static String CDC = utils.Utils.CDC;
+	
 	public static void printUsage() {
 		System.out.println("Usage:");
-		System.out.println("  cdc [OPTION...] [FILE...]");
+		System.out.println("  cdc [-verbose] [-prop] file [-option]");
+		System.out.println("");
+		System.out.println("  Be sure you use the correct order of parameters.");
 		System.out.println("");
 		System.out.println("Help Options:");
 		System.out.println("  -help                      Show help options");
@@ -33,12 +37,16 @@ public class Main {
         boolean vflag = false;
         String prop_file = "./CDC.properties";
 
+        if (args.length < 1) {
+        	System.out.println("Unknown options! Run \'cdc -help\' to see a full list of available command line options.");
+        }
+        
         while (i < args.length && args[i].startsWith("-")) {
             arg = args[i++];
 
             // use this type of check for "wordy" arguments
             if (arg.equals("-verbose")) {
-                System.out.println("Verbose mode on");
+                System.out.println(CDC +  "Verbose mode on");
                 vflag = true;
             }
 
@@ -49,7 +57,7 @@ public class Main {
                 else
                     System.err.println("-prop requires a property file");
                 if (vflag)
-                    System.out.println("Properties file = " + prop_file);
+                    System.out.println(CDC + "Properties file = " + prop_file);
             }
             
             else if (arg.equals("-help")) {
@@ -57,27 +65,32 @@ public class Main {
             }            	
             
             else if (arg.equals("-tablescan")) {
-            	if (vflag) System.out.println("Starting Table Scan...");
-            	TableScan.main(prop_file);            	
+            	if (vflag) {
+            		System.out.println(CDC + "Starting Table Scan...");
+            		TableScan.main(prop_file, "-verbose");
+            	}
+            	else
+            		TableScan.main(prop_file);            	
             }
             
             else if (arg.equals("-snapshot")) {
-            	if (vflag) System.out.println("Starting Snapshot Storage...");
+            	if (vflag) System.out.println(CDC + "Starting Snapshot Storage...");
             	Snapshot.main(prop_file);            	
             }
             
             else if (arg.equals("-differential")) {
-            	if (vflag) System.out.println("Starting Differential...");
+            	if (vflag) System.out.println(CDC + "Starting Differential...");
             	Differential.main(prop_file);            	
             }
             
             else if (arg.equals("-createschema")) {
-            	if (vflag) System.out.println("Creating Schema...");
+            	if (vflag) System.out.println(CDC + "Creating Schema...");
             	CreateSchema.main(prop_file);            	
             }
 
             // use this type of check for a series of flag arguments
             else {
+            	System.out.println("Unknown options\nRun \'cdc -help\' to see a full list of available command line options.");
                /* for (j = 1; j < arg.length(); j++) {
                     flag = arg.charAt(j);
                     switch (flag) {
@@ -93,11 +106,11 @@ public class Main {
                     }
                 }*/
             }
-        }
+        }/*
         if (i == args.length)
         	System.out.println("Unknown options\nRun \'cdc -help\' to see a full list of available command line options.");
-        else
-            System.out.println("Done.");
+        else*/
+        System.out.println(CDC + "Done.");
         
     }		
 }
