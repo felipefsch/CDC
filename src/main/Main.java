@@ -85,7 +85,7 @@ public class Main {
             
             else if (arg.equals("-createschema")) {
             	if (vflag) System.out.println(CDC + "Creating Schema...");
-            	CreateSchema.main(prop_file);            	
+            	Create.main(prop_file);            	
             }
 
             // use this type of check for a series of flag arguments

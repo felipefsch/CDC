@@ -70,11 +70,18 @@ public class Snapshot extends Configured implements Tool
     
     private static Properties prop;
     
+    private static boolean VERBOSE = false;
+    
+    private static String CDC = utils.Utils.CDC;
+    
     public static void main(String... args) throws Exception
     {
     	String path = args.length > 0 ? args[0] : "./CDC.properties";
 
-    	System.out.println("Properties loaded from: " + path);
+    	VERBOSE = args.length > 1 && args[1].equals("-verbose") ? true : false;
+    	
+    	if (VERBOSE)	    	
+    		System.out.println(CDC + "Properties loaded from: " + path);
     	
     	prop = Utils.getCassandraProp(path);
     	    	   	
@@ -151,6 +158,9 @@ public class Snapshot extends Configured implements Tool
                 outKeyName.set(KEYSPACE + "/" + COLUMN_FAMILY + "/" + keyName + "/null/" + columnName);
                 outColumnValue.set(columnTimestamp + "/" + columnValue);
                 
+                if (VERBOSE)
+                	System.out.println(CDC + "Key: " + outKeyName.toString() + " value: " + outColumnValue.toString());
+                
                 context.write(outKeyName, outColumnValue);
         	}        	           
         }
@@ -207,6 +217,9 @@ public class Snapshot extends Configured implements Tool
                     outKeyName.set(KEYSPACE + "/" + COLUMN_FAMILY + "/" + keyName + "/" + superColumnName + "/" + subColumnName);
                     outColumnValue.set(subColumnTimestamp+ "/" + subColumnValue);
                     
+                    if (VERBOSE)
+	                	System.out.println(CDC + "Key: " + outKeyName.toString() + " value: " + outColumnValue.toString());
+                    
                     context.write(outKeyName, outColumnValue);
                 }
         	}        	           
@@ -242,9 +255,15 @@ public class Snapshot extends Configured implements Tool
         job.setJarByClass(Snapshot.class);
         
         if (IS_SUPER.equals("true")) {
+        	if (VERBOSE)
+        		System.out.println(CDC + "Setting mapper for Super Column Family");
+        	
         	job.setMapperClass(SuperColumnStoreMapper.class);
         }
         else {
+        	if (VERBOSE)
+        		System.out.println(CDC + "Setting mapper for Standard Column Family");
+        	
         	job.setMapperClass(StandardColumnStoreMapper.class);
         }
 
@@ -257,7 +276,10 @@ public class Snapshot extends Configured implements Tool
         FileSystem fs = FileSystem.get(getConf());
         
         if (fs.exists(new Path(OUTPUT_PATH))){
-        	  fs.delete(new Path(OUTPUT_PATH), true);          	  
+			if (VERBOSE)
+				System.out.println(CDC + "Deleting existing output path: " + OUTPUT_PATH);
+        	
+			fs.delete(new Path(OUTPUT_PATH), true);          	  	
         }
         FileOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));
 
@@ -271,6 +293,9 @@ public class Snapshot extends Configured implements Tool
         SlicePredicate predicate = new SlicePredicate().setColumn_names(columns);
         ConfigHelper.setInputSlicePredicate(job.getConfiguration(), predicate);
      
+        if (VERBOSE)
+        	System.out.println(CDC + "Waiting to be completed");
+        
         job.waitForCompletion(true);
        
         return 0;

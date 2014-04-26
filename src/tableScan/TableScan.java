@@ -75,7 +75,8 @@ public class TableScan extends Configured implements Tool{
 	    	
 	    	VERBOSE = args.length > 1 && args[1].equals("-verbose") ? true : false;
 	    	
-	    	System.out.println(CDC + "Properties loaded from: " + path);
+	    	if (VERBOSE)	    	
+	    		System.out.println(CDC + "Properties loaded from: " + path);
 	    	
 	    	prop = Utils.getCassandraProp(path);
 	    		    	    	
@@ -290,8 +291,9 @@ public class TableScan extends Configured implements Tool{
 	        
 	        SlicePredicate predicate = new SlicePredicate().setColumn_names(columns);
 	        ConfigHelper.setInputSlicePredicate(job.getConfiguration(), predicate);
-	     
-	        System.out.println(CDC + "Waiting to be completed");
+	        
+	        if (VERBOSE)
+	        	System.out.println(CDC + "Waiting to be completed");
 	        
 	        job.waitForCompletion(true);
 	       
