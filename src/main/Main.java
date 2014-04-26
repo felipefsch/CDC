@@ -57,7 +57,7 @@ public class Main {
                 else
                     System.err.println("-prop requires a property file");
                 if (vflag)
-                    System.out.println(CDC + "Properties file = " + prop_file);
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
             }
             
             else if (arg.equals("-help")) {
@@ -79,8 +79,12 @@ public class Main {
             }
             
             else if (arg.equals("-differential")) {
-            	if (vflag) System.out.println(CDC + "Starting Differential...");
-            	Differential.main(prop_file);            	
+            	if (vflag) {
+            		System.out.println(CDC + "Starting Differential...");
+            		Differential.main(prop_file, "-verbose");
+            	}
+            	else
+            		Differential.main(prop_file);            	
             }
             
             else if (arg.equals("-createschema")) {

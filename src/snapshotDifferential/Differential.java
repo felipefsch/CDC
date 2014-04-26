@@ -42,11 +42,19 @@ public class Differential extends Configured implements Tool {
 	
 	private static Properties prop;
 	
+	private static boolean VERBOSE = false;
+	
+	private static String CDC = utils.Utils.CDC;
+	private static String ERROR = utils.Utils.ERROR;
+	
     public static void main(String... args) throws Exception
     {    	
     	String path = args.length > 0 ? args[0] : "./CDC.properties";
 
-    	System.out.println("Properties loaded from: " + path);
+    	VERBOSE = args.length > 1 && args[1].equals("-verbose") ? true : false;
+    	
+    	/*if (VERBOSE)	    	
+    		System.out.println(CDC + "Properties loaded from: " + path);*/
     	
     	prop = Utils.getCassandraProp(path);
     	  	
@@ -82,7 +90,9 @@ public class Differential extends Configured implements Tool {
 			
 			TextPair outValue = new TextPair(new Text("0"), new Text(outVal));
 			
-//			System.out.println("key: " + outKey + " value: " + outVal);
+			if (VERBOSE)
+				System.out.println(CDC + "[OLD] " + "key: " + outKey + " value: " + outVal);
+			
 			output.collect(new Text(outKey), outValue);
 		}
     }
@@ -104,8 +114,10 @@ public class Differential extends Configured implements Tool {
 			}
 			
 			TextPair outValue = new TextPair(new Text("1"), new Text(outVal));
+
+			if (VERBOSE)
+				System.out.println(CDC + "[NEW] " +"key: " + outKey + " value: " + outVal);
 			
-//			System.out.println("key: " + outKey + " value: " + outVal);
 			output.collect(new Text(outKey), outValue);
     	}
     }
@@ -157,7 +169,11 @@ public class Differential extends Configured implements Tool {
     		else {
     			key = null;
     			outputValue = null;
-    		}    		
+    		}    
+    		
+    		if (VERBOSE)
+    			System.out.println(CDC + "key:" + key + " value: " + outputValue);
+    		
     		output.collect(key, outputValue);    		
 		}
     }
@@ -188,19 +204,22 @@ public class Differential extends Configured implements Tool {
         if (fs.exists(new Path(OLD_SNAPSHOT)) && fs.exists(new Path(NEW_SNAPSHOT)))
         {        	  
       	  MultipleInputs.addInputPath(job, new Path(OLD_SNAPSHOT),
-	        		  TextInputFormat.class, MapperOldSnapshot.class);
+        		  TextInputFormat.class, MapperOldSnapshot.class);
 	          
-	          MultipleInputs.addInputPath(job, new Path(NEW_SNAPSHOT),
-	        		  TextInputFormat.class, MapperNewSnapshot.class);
+          MultipleInputs.addInputPath(job, new Path(NEW_SNAPSHOT),
+        		  TextInputFormat.class, MapperNewSnapshot.class);
       	  
-	          // Output path for the Job	          
-	          if (fs.exists(new Path(OUTPUT_PATH))){
-	        	  fs.delete(new Path(OUTPUT_PATH), true);          	  
-	          }
-	          
-	          FileOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));
+          // Output path for the Job	          
+          if (fs.exists(new Path(OUTPUT_PATH))){
+        	  fs.delete(new Path(OUTPUT_PATH), true);          	  
+          }
+          FileOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));
         }
-		
+        else {
+        	System.out.println(CDC + ERROR + "Old or New snapshot paths does not exists. Job will be terminated!");
+        	return 0;
+        }
+        
 		JobClient.runJob(job);
 		
 		return 0;

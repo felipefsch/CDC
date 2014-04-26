@@ -75,8 +75,8 @@ public class TableScan extends Configured implements Tool{
 	    	
 	    	VERBOSE = args.length > 1 && args[1].equals("-verbose") ? true : false;
 	    	
-	    	if (VERBOSE)	    	
-	    		System.out.println(CDC + "Properties loaded from: " + path);
+	    	/*if (VERBOSE)	    	
+	    		System.out.println(CDC + "Properties loaded from: " + path);*/
 	    	
 	    	prop = Utils.getCassandraProp(path);
 	    		    	    	

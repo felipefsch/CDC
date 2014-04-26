@@ -10,6 +10,8 @@ import java.util.Properties;
 public class Utils {
 	
 	public static final String CDC = "[CDC] ";
+	public static final String ERROR = "ERROR: ";
+	
 	
 	/**
 	 * Set into file at current folder the last CDC cycle time. 
