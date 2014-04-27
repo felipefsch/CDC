@@ -10,6 +10,8 @@ import java.util.Properties;
 public class Utils {
 	
 	public static final String CDC = "[CDC] ";
+	public static final String MAPPER = "[MAP] ";
+	public static final String REDUCER = "[RED] ";
 	public static final String ERROR = "ERROR: ";
 	
 	

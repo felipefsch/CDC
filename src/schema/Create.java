@@ -24,6 +24,10 @@ public class Create {
 	private static String IS_SUPER = "false";
 	
 	private static Properties prop;
+		
+	private static String CDC = utils.Utils.CDC;
+	
+	private static boolean VERBOSE = false;
 	
 	public static void createStandardSchema(Cluster cluster) {
 		ColumnFamilyDefinition standardCfDef = HFactory.createColumnFamilyDefinition(KEYSPACE, COLUMN_FAMILY, ComparatorType.UTF8TYPE);
@@ -64,14 +68,17 @@ public class Create {
 	
 	public static void main(String... args) throws Exception {
 		String path = args.length > 0 ? args[0] : "./CDC.properties";
-
-    	System.out.println("Properties loaded from: " + path);
+		
+		VERBOSE = args.length > 1 && args[1].equals("-verbose") ? true : false;
+		
+    	//System.out.println(CDC + "Properties loaded from: " + path);
     	
     	prop = Utils.getCassandraProp(path);
 					
 		KEYSPACE = prop.getProperty("cassandra.keyspace");
 		COLUMN_FAMILY = prop.getProperty("cassandra.column_family");
-    	
+    	IS_SUPER = prop.getProperty("cassandra.is_super_cf");		
+		
     	if (IS_SUPER.equals("true")) {
     		
     		try {
@@ -79,7 +86,7 @@ public class Create {
 				dropKeyspace();
 				createKeyspaceStdColumnFamily();
 				
-				System.out.println("Previous keyspace droped. Fresh one created.");
+				System.out.println(CDC + "Previous keyspace droped. Fresh one created.");
 
 			} catch (Exception e) {			
 				createKeyspaceStdColumnFamily();
@@ -92,13 +99,14 @@ public class Create {
 				dropKeyspace();
 				createKeyspaceSuperColumnFamily();
 				
-				System.out.println("Previous keyspace droped. Fresh one created.");
+				System.out.println(CDC + "Previous keyspace droped. Fresh one created.");
 
 			} catch (Exception e) {			
 				createKeyspaceStdColumnFamily();
 			}	
     	}
     	
-		System.out.println("Schema created!");
+    	if (VERBOSE)
+    		System.out.println(CDC + "Schema created!");
 	}
 }

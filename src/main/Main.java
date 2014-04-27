@@ -1,5 +1,6 @@
 package main;
 
+import logBased.LogBased;
 import tableScan.TableScan;
 import snapshotDifferential.Snapshot;
 import snapshotDifferential.Differential;
@@ -38,7 +39,7 @@ public class Main {
 		System.out.println("  -v, -verbose               Verbose mode");
 		System.out.println("  -p, -prop                  Set property file with all properties");
 		System.out.println("  -ts, -tablescan            Table Scan CDC");
-		//System.out.println("  -lb, logbased              Execute logbased CDC");
+		System.out.println("  -lb, logbased              Execute logbased CDC");
 		System.out.println("  -s, -snapshot              Snapshot creation");
 		System.out.println("  -d, -differential          Differential CDC");
 		System.out.println("  -c, -createschema          Create Cassandra Schema");
@@ -73,9 +74,8 @@ public class Main {
                 if (i < args.length)
                     prop_file = args[i++];
                 else
-                    System.err.println("-p requires a property file");
-                if (vflag)
-                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+                    System.err.println("-prop requires a property file");
+
             }
             
             else if (arg.equals("-h") || arg.equals("-help")) {
@@ -85,6 +85,7 @@ public class Main {
             else if (arg.equals("-ts") || arg.equals("-tablescan")) {
             	if (vflag) {
             		System.out.println(CDC + "Starting Table Scan...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
             		TableScan.main(prop_file, "-verbose");
             	}
             	else
@@ -92,13 +93,17 @@ public class Main {
             }
             
             else if (arg.equals("-s") || arg.equals("-snapshot")) {
-            	if (vflag) System.out.println(CDC + "Starting Snapshot Storage...");
+            	if (vflag) {
+            		System.out.println(CDC + "Starting Snapshot Storage...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+            	}
             	Snapshot.main(prop_file);            	
             }
             
             else if (arg.equals("-d") || arg.equals("-differential")) {
             	if (vflag) {
             		System.out.println(CDC + "Starting Differential...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
             		Differential.main(prop_file, "-verbose");
             	}
             	else
@@ -108,20 +113,22 @@ public class Main {
             else if (arg.equals("-c") || arg.equals("-createschema")) {
             	if (vflag){
             		System.out.println(CDC + "Creating Schema...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
             		Create.main(prop_file, "-verbose");
             	}
             	else
             		Create.main(prop_file);            	
             }
-            /*
+            
             else if (arg.equals("-lb") || arg.equals("-logbased")) {
             	if (vflag){            		
             		System.out.println(CDC + "Starting Log Based...");
-            		//call logbased
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+            		LogBased.main(prop_file, "-verbose");
             	}
             	else
-            		printUsage();//Create.main(prop_file);            	
-            }*/
+            		LogBased.main(prop_file);            	
+            }
             
             else if (arg.equals("-triggers")) {
             	printTriggerTutorial();         	
