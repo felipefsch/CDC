@@ -9,6 +9,21 @@ public class Main {
 	
 	private static String CDC = utils.Utils.CDC;
 	
+	public static void printTriggerTutorial() {
+		System.out.println("First: you must have Cassandra with trigger patch.");
+		System.out.println("You install as in https://issues.apache.org/jira/secure/attachment/12451779/HOWTO-PatchAndRunTriggerExample.txt");
+		System.out.println("");
+		System.out.println("After building assure that everything works than stop Cassandra and do the follow:");
+		System.out.println("-Change static variables of desired trigger to match your configuration");
+		System.out.println("-Add trigger to contrib/trigger_example/src");
+		System.out.println("-Include trigger specifications in the end of cassandra.yaml at contrib/trigger_example");
+		System.out.println("-Run \'ant\' to build");
+		System.out.println("-Start Cassandra again");
+		System.out.println("-It must be working now");
+		System.out.println("");
+		System.out.println("CDC-Triggered was made to handle triggered approaches");
+	}
+	
 	public static void printUsage() {
 		System.out.println("Usage:");
 		System.out.println("  cdc [-verbose] [-prop] file [-option]");
@@ -19,15 +34,17 @@ public class Main {
 		System.out.println("  -h, -help                  Show help options");
 		System.out.println("");
 		System.out.println("Application Options:");
+		System.out.println("  -triggers                  Show trigger short tutorial");
 		System.out.println("  -v, -verbose               Verbose mode");
 		System.out.println("  -p, -prop                  Set property file with all properties");
 		System.out.println("  -ts, -tablescan            Table Scan CDC");
-		System.out.println("  -lb, logbased              Execute logbased CDC");
+		//System.out.println("  -lb, logbased              Execute logbased CDC");
 		System.out.println("  -s, -snapshot              Snapshot creation");
 		System.out.println("  -d, -differential          Differential CDC");
 		System.out.println("  -c, -createschema          Create Cassandra Schema");
 		System.out.println("");
 		System.out.println("Remember to specify all fields in .properties file!!");
+		System.out.println("");
 	}
 	
 	public static void main (String[] args) throws Exception{
@@ -96,7 +113,7 @@ public class Main {
             	else
             		Create.main(prop_file);            	
             }
-
+            /*
             else if (arg.equals("-lb") || arg.equals("-logbased")) {
             	if (vflag){            		
             		System.out.println(CDC + "Starting Log Based...");
@@ -104,6 +121,10 @@ public class Main {
             	}
             	else
             		printUsage();//Create.main(prop_file);            	
+            }*/
+            
+            else if (arg.equals("-triggers")) {
+            	printTriggerTutorial();         	
             }
             
             // use this type of check for a series of flag arguments
@@ -128,7 +149,7 @@ public class Main {
         if (i == args.length)
         	System.out.println("Unknown options\nRun \'cdc -help\' to see a full list of available command line options.");
         else*/
-        System.out.println(CDC + "Done.");
+        //System.out.println(CDC + "Done.");
         
     }		
 }
