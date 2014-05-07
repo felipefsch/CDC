@@ -5,6 +5,7 @@ import tableScan.TableScan;
 import snapshotDifferential.Snapshot;
 import snapshotDifferential.Differential;
 import schema.*;
+import auditColumn.*;
 
 public class Main {
 	
@@ -37,12 +38,14 @@ public class Main {
 		System.out.println("Application Options:");
 		System.out.println("  -triggers                  Show trigger short tutorial");
 		System.out.println("  -v, -verbose               Verbose mode");
-		System.out.println("  -p, -prop                  Set property file with all properties");
+		System.out.println("  -p, -prop                  Set property file to be used");	
 		System.out.println("  -ts, -tablescan            Table Scan CDC");
-		System.out.println("  -lb, logbased              Execute logbased CDC");
+		System.out.println("  -ac, -auditcolumn          Audit Column CDC");
+		System.out.println("  -lb, -logbased             Execute logbased CDC");
 		System.out.println("  -s, -snapshot              Snapshot creation");
 		System.out.println("  -d, -differential          Differential CDC");
 		System.out.println("  -c, -createschema          Create Cassandra Schema");
+		System.out.println("  -ca, -createaudit          Create Audit Columns to all columns of the Column Familys");
 		System.out.println("");
 		System.out.println("Remember to specify all fields in .properties file!!");
 		System.out.println("");
@@ -120,6 +123,16 @@ public class Main {
             		Create.main(prop_file);            	
             }
             
+            else if (arg.equals("-ac") || arg.equals("-auditcolumn")) {
+            	if (vflag){
+            		System.out.println(CDC + "Starting Audit Column CDC...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+            		AuditColumn.main(prop_file, "-verbose");
+            	}
+            	else
+            		AuditColumn.main(prop_file);            	
+            }
+            
             else if (arg.equals("-lb") || arg.equals("-logbased")) {
             	if (vflag){            		
             		System.out.println(CDC + "Starting Log Based...");
@@ -128,6 +141,16 @@ public class Main {
             	}
             	else
             		LogBased.main(prop_file);            	
+            }
+            
+            else if (arg.equals("-ca") || arg.equals("-createaudit")) {
+            	if (vflag){            		
+            		System.out.println(CDC + "Creating Audit Columns...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+            		CreateAuditColumns.main(prop_file, "-verbose");
+            	}
+            	else
+            		CreateAuditColumns.main(prop_file);            	
             }
             
             else if (arg.equals("-triggers")) {

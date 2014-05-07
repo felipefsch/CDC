@@ -66,7 +66,7 @@ public class LogDeserializer {
 	            keyValue = deserialize(dis, keyValueAux);
             }
         }                
-        
+
         return keyValue;
     }
     

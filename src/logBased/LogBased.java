@@ -97,7 +97,7 @@ public class LogBased extends Configured implements Tool{
 				LogRow logRow = LogDeserializer.deserialize(dis);
 				
 				if (logRow.getKeyspace() != null) {
-				
+					
 					String outputKey = KeyValueGenerator.generateKey(logRow);
 					String outputValue = KeyValueGenerator.generateValue(logRow);
 					

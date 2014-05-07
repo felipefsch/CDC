@@ -7,6 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.cassandra.thrift.Cassandra;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TFramedTransport;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
+
 public class Utils {
 	
 	public static final String CDC = "[CDC] ";
@@ -102,5 +109,29 @@ public class Utils {
     	}
     	
     	return colNames;
-    }    
+    }   
+    
+    public static Cassandra.Client getCassandraClient(String... propPath) throws Exception {
+    	
+    	String path = propPath.length > 0 ? propPath[0] : "./CDC.properties";
+    	Properties prop = new Properties();
+    	prop = getCassandraProp(path);
+    	
+		// connecting to Cassandra
+    	int rpc_port = Integer.parseInt(prop.getProperty("cassandra.rpc_port"));
+        TTransport tr = new TFramedTransport(new TSocket(prop.getProperty("cassandra.address"), rpc_port));
+        TProtocol proto = new TBinaryProtocol(tr);
+        try {
+	        tr.open();
+	        
+	        // Cassandra thrift client
+	        Cassandra.Client client = new Cassandra.Client(proto);	        
+	        return client;
+        }
+        catch (Exception e) {
+        	System.out.println(CDC + "Could not connect to Cassandra.");
+        	System.out.println(CDC + e);
+        	return null;
+        }        
+    }
 }
