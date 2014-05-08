@@ -17,6 +17,7 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import utils.Utils;
+import utils.TextPair;
 
 /**
  * @author felipe

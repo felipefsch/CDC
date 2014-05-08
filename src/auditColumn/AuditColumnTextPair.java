@@ -38,9 +38,9 @@ import org.apache.thrift.transport.TFramedTransport;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 
-import utils.Utils;
+import utils.*;
 
-public class AuditColumn extends Configured implements Tool{
+public class AuditColumnTextPair extends Configured implements Tool{
 /*------------------------------Necessary configuration-----------------------------------------------*/
 	
 	// Necessary configuration files of hadoop
@@ -104,7 +104,7 @@ public class AuditColumn extends Configured implements Tool{
     	}
     	
         // Let ToolRunner handle generic command-line options
-        ToolRunner.run(new Configuration(), new AuditColumn(), args);
+        ToolRunner.run(new Configuration(), new AuditColumnTextPair(), args);
 //        System.exit(0);
     }
 
@@ -113,10 +113,10 @@ public class AuditColumn extends Configured implements Tool{
      *	This Mapper creates keys and respective values for standard columns.
      *
      */
-    public static class StandardColumnsMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, Text>
+    public static class StandardColumnsMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, TextPair>
     {
         private Text outKeyName = new Text();
-        private Text outColumnValue = new Text();
+        private TextPair outColumnValue = new TextPair();
         private List<String> listColumnNames = new ArrayList<String>();
         private String colNames = null;
         
@@ -153,15 +153,22 @@ public class AuditColumn extends Configured implements Tool{
                 String columnTimestamp = "" + column.timestamp();
                 //String colName = ByteBufferUtil.string(column.name());
                 
+                // Send to same reducer column and audit column
                 if (colName.startsWith("audit:")) {
                 	colName = colName.substring(colName.indexOf(":") + 1);
-                	columnValue = "audit:" + columnValue;
+                	outColumnValue = new TextPair(new Text("0"), new Text(columnValue + "-" + columnTimestamp));
+                }
+                else {
+                	outColumnValue = new TextPair(new Text("1"), new Text(columnValue + "-" + columnTimestamp));
                 }
                             
                 // Timestamp not in the key part but in value part
                 // Key designed to follow the same pattern as the other approaches.
                 outKeyName.set(keyName + "/null/" + colName);
-                outColumnValue.set(columnValue + "-" + columnTimestamp);
+                //outColumnValue.set(columnValue + "-" + columnTimestamp);
+                
+                if (VERBOSE)
+                	System.out.println(CDC + outKeyName.toString() + "  " + outColumnValue.toString());
                 
                 context.write(outKeyName, outColumnValue);
         	}        	           
@@ -218,7 +225,6 @@ public class AuditColumn extends Configured implements Tool{
                 	
                     if (subColumnName.startsWith("audit:")) {
                     	subColumnName = subColumnName.substring(subColumnName.indexOf(":") + 1);
-                    	subColumnValue = "audit:" + subColumnValue;
                     }
                 	
                 	// Key and value designed to follow the same pattern as the other approaches
@@ -233,10 +239,10 @@ public class AuditColumn extends Configured implements Tool{
         }
     }
     
-    public static class AnalysisReducer extends Reducer<Text, Text, Text, Text> {
+    public static class AnalysisReducer extends Reducer<Text, TextPair, Text, Text> {
     	
     	@Override
-    	public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+    	public void reduce(Text key, Iterable<TextPair> values, Context context) throws IOException, InterruptedException {
     		String strKey = key.toString();
     		String keyName = strKey.substring(0, strKey.indexOf("/"));
     		String superColName = strKey.substring(strKey.indexOf("/") + 1, strKey.lastIndexOf("/"));
@@ -247,7 +253,26 @@ public class AuditColumn extends Configured implements Tool{
     		String auditValue = null;
     		long auditTimestamp = 0;
     		
-    		for (Text value : values) {
+    		
+    		for (TextPair val : values) {
+    			
+    			Text source = val.getFirst();
+    			Text value = val.getSecond();
+    			
+    			String strValue = value.toString();
+    			
+    			if (source.toString().equals("0")) {    				
+    				auditValue = strValue.substring(strValue.indexOf(":") + 1, strValue.lastIndexOf("-"));
+    				auditTimestamp =  Long.parseLong(strValue.substring(strValue.lastIndexOf("-") + 1));
+    				
+    			}
+    			else if (source.toString().equals("1")) {    				
+    				effectiveValue = strValue.substring(0, strValue.lastIndexOf("-"));
+    				effectiveTimestamp =  Long.parseLong(strValue.substring(strValue.lastIndexOf("-") + 1));
+    			}
+    		}
+    		
+    		/*for (Text value : values) {
     			String strValue = value.toString();
     			
     			if (strValue.startsWith("audit:")) {
@@ -258,7 +283,7 @@ public class AuditColumn extends Configured implements Tool{
     				effectiveValue = strValue.substring(0, strValue.lastIndexOf("-"));
     				effectiveTimestamp =  Long.parseLong(strValue.substring(strValue.lastIndexOf("-") + 1));
     			}
-    		}
+    		}*/
     		
     		String outputKey = null;
     		String outputValue = null;
@@ -307,9 +332,6 @@ public class AuditColumn extends Configured implements Tool{
 				outputValue = effectiveValue;
     		}
     		
-    		if (VERBOSE)
-    			System.out.println(CDC + outputKey + " " + outputValue);
-    		
     		context.write(new Text(outputKey), new Text(outputValue));
     	}
     }
@@ -343,7 +365,7 @@ public class AuditColumn extends Configured implements Tool{
         getConf().addResource(new Path(HDFS_SITE));
 
         Job job = new Job(getConf(), "StoreSnapshot");
-        job.setJarByClass(AuditColumn.class);
+        job.setJarByClass(AuditColumnTextPair.class);
         
         if (IS_SUPER) {
         	job.setMapperClass(SuperColumnsMapper.class);        	

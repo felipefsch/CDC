@@ -123,16 +123,6 @@ public class Main {
             		Create.main(prop_file);            	
             }
             
-            else if (arg.equals("-ac") || arg.equals("-auditcolumn")) {
-            	if (vflag){
-            		System.out.println(CDC + "Starting Audit Column CDC...");
-                    System.out.println(CDC + "Properties loaded from: " + prop_file);
-            		AuditColumn.main(prop_file, "-verbose");
-            	}
-            	else
-            		AuditColumn.main(prop_file);            	
-            }
-            
             else if (arg.equals("-lb") || arg.equals("-logbased")) {
             	if (vflag){            		
             		System.out.println(CDC + "Starting Log Based...");
@@ -141,6 +131,16 @@ public class Main {
             	}
             	else
             		LogBased.main(prop_file);            	
+            }
+            
+            else if (arg.equals("-ac") || arg.equals("-auditcolumn")) {
+            	if (vflag){
+            		System.out.println(CDC + "Starting Audit Column CDC...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+            		AuditColumn.main(prop_file, "-verbose");
+            	}
+            	else
+            		AuditColumn.main(prop_file);            	
             }
             
             else if (arg.equals("-ca") || arg.equals("-createaudit")) {
