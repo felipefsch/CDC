@@ -1,11 +1,13 @@
 package main;
 
 import logBased.LogBased;
-import tableScan.TableScan;
-import snapshotDifferential.Snapshot;
+import schema.Create;
 import snapshotDifferential.Differential;
-import schema.*;
-import auditColumn.*;
+import snapshotDifferential.Snapshot;
+import tableScan.TableScan;
+import trackingTable.PrepareTrackingTable;
+import auditColumn.AuditColumn;
+import auditColumn.CreateAuditColumns;
 
 public class Main {
 	
@@ -46,6 +48,7 @@ public class Main {
 		System.out.println("  -d, -differential          Differential CDC");
 		System.out.println("  -c, -createschema          Create Cassandra Schema");
 		System.out.println("  -ca, -createaudit          Create Audit Columns to all columns of the Column Familys");
+		System.out.println("  -pt, -preparetracking      Create and prepare Tracking Table based on atual data");
 		System.out.println("");
 		System.out.println("Remember to specify all fields in .properties file!!");
 		System.out.println("");
@@ -151,6 +154,16 @@ public class Main {
             	}
             	else
             		CreateAuditColumns.main(prop_file);            	
+            }
+            
+            else if (arg.equals("-pt") || arg.equals("-preparetracking")) {
+            	if (vflag){            		
+            		System.out.println(CDC + "Creating and Preparing Tracking Table...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+            		PrepareTrackingTable.main(prop_file, "-verbose");
+            	}
+            	else
+            		PrepareTrackingTable.main(prop_file);            	
             }
             
             else if (arg.equals("-triggers")) {
