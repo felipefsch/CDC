@@ -6,6 +6,7 @@ import snapshotDifferential.Differential;
 import snapshotDifferential.Snapshot;
 import tableScan.TableScan;
 import trackingTable.PrepareTrackingTable;
+import trackingTable.TrackingTableSimple;
 import auditColumn.AuditColumn;
 import auditColumn.CreateAuditColumns;
 
@@ -164,6 +165,16 @@ public class Main {
             	}
             	else
             		PrepareTrackingTable.main(prop_file);            	
+            }
+            
+            else if (arg.equals("-tt") || arg.equals("-trackingtable")) {
+            	if (vflag){            		
+            		System.out.println(CDC + "Starting Tracking Table CDC...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+            		TrackingTableSimple.main(prop_file, "-verbose");
+            	}
+            	else
+            		TrackingTableSimple.main(prop_file);            	
             }
             
             else if (arg.equals("-triggers")) {
