@@ -121,6 +121,9 @@ public class LogDeserializer {
 			deserializeStandardColumn(dis, l);
 			lr.add(l);
         }
+        /**
+         * TODO Deserialization of super columns!!!
+         */
        // else if ((superColumn.contains(keyValue.getColumnFamilyId())))
        // 	deserializeSuperColumn(dis, keyValue, numColumns);
 //        else 
