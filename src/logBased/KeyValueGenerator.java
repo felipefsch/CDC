@@ -65,8 +65,8 @@ public class KeyValueGenerator {
 		String column = unparsedInput.substring(0, unparsedInput.indexOf("/"));		
 		unparsedInput = unparsedInput.substring(unparsedInput.indexOf("/") + 1, unparsedInput.length());
 		
-		String strValue = unparsedInput.substring(0, unparsedInput.indexOf("/"));
-		unparsedInput = unparsedInput.substring(unparsedInput.indexOf("/") + 1, unparsedInput.length());
+		String strValue = unparsedInput.substring(0, unparsedInput.lastIndexOf("/"));
+		unparsedInput = unparsedInput.substring(unparsedInput.lastIndexOf("/") + 1, unparsedInput.length());
 		
 		String timestamp = unparsedInput.substring(0, unparsedInput.length());
 		

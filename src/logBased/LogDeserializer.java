@@ -56,10 +56,11 @@ public class LogDeserializer {
         {        	
         	if (!keyspace.equals("system") && !keyspace.equals("local"))
             {
-        		System.out.println("KS: " + keyspace + " key: " + Utils.toString(key) + " size: " + size);
+        		String strKey = Utils.toString(key);
+        		System.out.println("KS: " + keyspace + " key: " + strKey + " size: " + size);
         		
 	            keyValueAux.setKeyspace(keyspace);	            
-	            keyValueAux.setKey(toString(key));	            
+	            keyValueAux.setKey(strKey);	            
                 Integer cfid = Integer.valueOf(dis.readInt());
                 keyValueAux.setColumnFamilyId(cfid);                
                 
@@ -109,11 +110,11 @@ public class LogDeserializer {
         	keyValue.setTimestamp(marketForDeletionAt);
         	return keyValue;
         }
-        
-        if (standardColumn.contains(keyValue.getColumnFamilyId()))
+        //For now, we are just using standard columns!! No need of this check!
+        //if (standardColumn.contains(keyValue.getColumnFamilyId()))
         	deserializeStandardColumn(dis, keyValue);
-        else if ((superColumn.contains(keyValue.getColumnFamilyId())))
-        	deserializeSuperColumn(dis, keyValue);
+       // else if ((superColumn.contains(keyValue.getColumnFamilyId())))
+       // 	deserializeSuperColumn(dis, keyValue);
 //        else 
 //        	return keyValue;
         return keyValue;
