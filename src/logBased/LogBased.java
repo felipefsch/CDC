@@ -94,17 +94,21 @@ public class LogBased extends Configured implements Tool{
 			DataInputStream dis = new DataInputStream(is);
 			
 			try {
-				LogRow logRow = LogDeserializer.deserialize(dis);
+				List<LogRow> lr = LogDeserializer.deserialize(dis);
+				Iterator<LogRow> it = lr.iterator();
 				
-				if (logRow.getKeyspace() != null) {
-					
-					String outputKey = KeyValueGenerator.generateKey(logRow);
-					String outputValue = KeyValueGenerator.generateValue(logRow);
-					
-					if (VERBOSE)
-						System.out.println(CDC + MAPPER + "Key: " + outputKey + " value: " + outputValue);
-					
-					output.collect(new Text(outputKey), new Text(outputValue));					
+				while (it.hasNext()){
+					LogRow logRow = it.next();
+					if (logRow.getKeyspace() != null) {
+						
+						String outputKey = KeyValueGenerator.generateKey(logRow);
+						String outputValue = KeyValueGenerator.generateValue(logRow);
+						
+						if (VERBOSE)
+							System.out.println(CDC + MAPPER + "Key: " + outputKey + " value: " + outputValue);
+						
+						output.collect(new Text(outputKey), new Text(outputValue));					
+					}
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

@@ -70,7 +70,25 @@ public class LogRow {
 	public int superColumnLocalDeletionTime;
 	public long superColumnMarketForDeleteAt;
 
-	
+	public LogRow(LogRow lr) {
+		this.bool = lr.bool;
+		this.columnFamily = lr.columnFamily;
+		this.columnFamilyId = lr.columnFamilyId;
+		this.columnName = lr.columnName;
+		this.key = lr.key;
+		this.keyspace = lr.keyspace;
+		this.localDeletionTime = lr.localDeletionTime;
+		this.marketForDeleteAt = lr.marketForDeleteAt;
+		this.mutationType = lr.mutationType;
+		this.numberModifications = lr.numberModifications;
+		this.numberStandardColumns = lr.numberStandardColumns;
+		this.numberSuperColumns = lr.numberSuperColumns;
+		this.superColumnLocalDeletionTime = lr.superColumnLocalDeletionTime;
+		this.superColumnMarketForDeleteAt = lr.superColumnMarketForDeleteAt;
+		this.superColumnName = lr.superColumnName;
+		this.timestamp = lr.timestamp;
+		this.value = lr.value;
+	}
 	
 	public Integer getColumnFamilyId() {
 		return columnFamilyId;

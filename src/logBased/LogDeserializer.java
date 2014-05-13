@@ -5,8 +5,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-//import java.util.HashMap;
 import java.util.List;
+
+import javax.xml.crypto.dsig.keyinfo.KeyValue;
 
 import org.apache.cassandra.db.CounterUpdateColumn;
 import org.apache.cassandra.utils.ByteBufferUtil;
@@ -29,7 +30,7 @@ public class LogDeserializer {
 //    public static String superColFamName = "Salaries";
 //    public static String standardColFamName = "Grades";
 	
-    public static LogRow deserialize(DataInput dis) throws Exception
+    public static List<LogRow> deserialize(DataInput dis) throws Exception
     {   
 //    	standardColumn.add(1022);
 //    	superColumn.add(1021);
@@ -52,6 +53,7 @@ public class LogDeserializer {
         // Number of modifications
         int size = dis.readInt();
         keyValueAux.setNumberModifications(size);
+        List<LogRow> lr = new ArrayList<LogRow>();
         for (int i = 0; i < size; ++i)
         {        	
         	if (!keyspace.equals("system") && !keyspace.equals("local"))
@@ -64,14 +66,14 @@ public class LogDeserializer {
                 Integer cfid = Integer.valueOf(dis.readInt());
                 keyValueAux.setColumnFamilyId(cfid);                
                 
-	            keyValue = deserialize(dis, keyValueAux);
+	            lr = deserialize(dis, keyValueAux);
             }
         }                
 
-        return keyValue;
+        return lr;
     }
     
-    public static LogRow deserialize(DataInput dis, LogRow keyValue) throws Exception
+    public static List<LogRow> deserialize(DataInput dis, LogRow keyValue) throws Exception
     {
     	boolean notEmptyColumn = dis.readBoolean();
     	keyValue.setBool(notEmptyColumn);
@@ -105,87 +107,95 @@ public class LogDeserializer {
         int numColumns = dis.readInt();
         
         // key was deleted
+        List<LogRow> lr = new ArrayList<LogRow>();
         if (numColumns == 0) {
         	keyValue.setOperation(LogRow.MutationType.DELETION);
         	keyValue.setTimestamp(marketForDeletionAt);
-        	return keyValue;
+        	lr.add(keyValue);
+        	return lr;
         }
         //For now, we are just using standard columns!! No need of this check!
-        //if (standardColumn.contains(keyValue.getColumnFamilyId()))
-        	deserializeStandardColumn(dis, keyValue);
+        //if (standardColumn.contains(keyValue.getColumnFamilyId()))        
+        for (int i = 1; i <= numColumns; i++) {
+        	LogRow l = new LogRow(keyValue);
+			deserializeStandardColumn(dis, l);
+			lr.add(l);
+        }
        // else if ((superColumn.contains(keyValue.getColumnFamilyId())))
-       // 	deserializeSuperColumn(dis, keyValue);
+       // 	deserializeSuperColumn(dis, keyValue, numColumns);
 //        else 
 //        	return keyValue;
-        return keyValue;
+        return lr;
     }
     
     public static void deserializeStandardColumn(DataInput dis, LogRow keyValue) throws Exception {
-        ByteBuffer columnName = ByteBufferUtil.readWithShortLength(dis);
-        keyValue.setColumnName(toString(columnName));        
-        
-        int serializationFlag = dis.readUnsignedByte();
-        if ((serializationFlag & COUNTER_MASK) != 0)
-        {
-            long timestampOfLastDelete = dis.readLong();
-            System.out.print("[" + timestampOfLastDelete + "]");
-            long ts = dis.readLong();
-            System.out.print("[" + ts + "]");
-            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
-            System.out.print("[" + value + "]");
-            System.out.print("COUNTER_MASK");
-            keyValue = null;
-        }
-        else if ((serializationFlag & EXPIRATION_MASK) != 0)
-        {
-            int ttl = dis.readInt();
-            System.out.print("[" + ttl + "]");
-            int expiration = dis.readInt();
-            System.out.print("[" + expiration + "]");
-            long ts = dis.readLong();
-            System.out.print("[" + ts + "]");
-            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
-            System.out.print("[" + value + "]");
-            System.out.print("EXPIRATION_MASK");
-            keyValue = null;
-        }
-        else if (serializationFlag == DELETION_MASK) {
-            long ts = dis.readLong();
-            keyValue.setTimestamp(ts);
-            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
-            keyValue.setValue(toString(value));
-        	keyValue.setOperation(LogRow.MutationType.DELETION);
-        }
-        else if (serializationFlag == INSERTION_MASK) {
-            long ts = dis.readLong();
-            keyValue.setTimestamp(ts);
-            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
-            keyValue.setValue(toString(value));
-        	keyValue.setOperation(LogRow.MutationType.INSERTION);
-        }
-        // after here is probably useless
-        else
-        {
-            long ts = dis.readLong();
-            keyValue.setTimestamp(ts);
-            System.out.print("[" + keyValue.getTimestamp() + "]");
-            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
-            keyValue.setValue(toString(value));
-            System.out.print("[" + keyValue.getValue() + "]");
-            if ((serializationFlag & COUNTER_UPDATE_MASK) != 0) {
-            	System.out.print("COUNTER_UPDATE_MASK");
-            	keyValue.setOperation(LogRow.MutationType.COUNTER_UPDATE);
-            	new CounterUpdateColumn(columnName, value, ts);
-            }
-            else
-            {
-            	System.out.print("NO_MASK");
-            	keyValue.setOperation(LogRow.MutationType.INSERTION);
-            }
-        }    	
+
+	    	ByteBuffer columnName = ByteBufferUtil.readWithShortLength(dis);
+	        keyValue.setColumnName(toString(columnName));        
+	        
+	        int serializationFlag = dis.readUnsignedByte();
+	        if ((serializationFlag & COUNTER_MASK) != 0)
+	        {
+	            long timestampOfLastDelete = dis.readLong();
+	            System.out.print("[" + timestampOfLastDelete + "]");
+	            long ts = dis.readLong();
+	            System.out.print("[" + ts + "]");
+	            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
+	            System.out.print("[" + value + "]");
+	            System.out.print("COUNTER_MASK");
+	            keyValue = null;
+	        }
+	        else if ((serializationFlag & EXPIRATION_MASK) != 0)
+	        {
+	            int ttl = dis.readInt();
+	            System.out.print("[" + ttl + "]");
+	            int expiration = dis.readInt();
+	            System.out.print("[" + expiration + "]");
+	            long ts = dis.readLong();
+	            System.out.print("[" + ts + "]");
+	            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
+	            System.out.print("[" + value + "]");
+	            System.out.print("EXPIRATION_MASK");
+	            keyValue = null;
+	        }
+	        else if (serializationFlag == DELETION_MASK) {
+	            long ts = dis.readLong();
+	            keyValue.setTimestamp(ts);
+	            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
+	            keyValue.setValue(toString(value));
+	        	keyValue.setOperation(LogRow.MutationType.DELETION);
+	        }
+	        else if (serializationFlag == INSERTION_MASK) {
+	            long ts = dis.readLong();
+	            keyValue.setTimestamp(ts);
+	            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
+	            keyValue.setValue(toString(value));
+	        	keyValue.setOperation(LogRow.MutationType.INSERTION);
+	        }
+	        // after here is probably useless
+	        else
+	        {
+	            long ts = dis.readLong();
+	            keyValue.setTimestamp(ts);
+	            System.out.print("[" + keyValue.getTimestamp() + "]");
+	            ByteBuffer value = ByteBufferUtil.readWithLength(dis);
+	            keyValue.setValue(toString(value));
+	            System.out.print("[" + keyValue.getValue() + "]");
+	            if ((serializationFlag & COUNTER_UPDATE_MASK) != 0) {
+	            	System.out.print("COUNTER_UPDATE_MASK");
+	            	keyValue.setOperation(LogRow.MutationType.COUNTER_UPDATE);
+	            	new CounterUpdateColumn(columnName, value, ts);
+	            }
+	            else
+	            {
+	            	System.out.print("NO_MASK");
+	            	keyValue.setOperation(LogRow.MutationType.INSERTION);
+	            }
+	        }
+
     }
     
-    public static void deserializeSuperColumn(DataInput dis, LogRow keyValue) throws Exception {
+    public static void deserializeSuperColumn(DataInput dis, LogRow keyValue, int numColumns) throws Exception {
     	 ByteBuffer superColumnName = ByteBufferUtil.readWithShortLength(dis);    	
     	 keyValue.setSuperColumnName(toString(superColumnName));    	 
     	 
@@ -212,6 +222,9 @@ public class LogDeserializer {
          
          // Just if it has sub columns
          if (size != 0) {
+        	 /**
+        	  * TODO: SEVERAL STANDARD COLUMNS SERIALIZED!!!
+        	  */
         	 deserializeStandardColumn(dis, keyValue);
          }
     }
