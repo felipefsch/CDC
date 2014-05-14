@@ -1,6 +1,7 @@
 package main;
 
 import logBased.LogBased;
+import performanceTest.PerformanceTest;
 import schema.Create;
 import snapshotDifferential.Differential;
 import snapshotDifferential.Snapshot;
@@ -50,6 +51,7 @@ public class Main {
 		System.out.println("  -c, -createschema          Create Cassandra Schema");
 		System.out.println("  -ca, -createaudit          Create Audit Columns to all columns of the Column Familys");
 		System.out.println("  -pt, -preparetracking      Create and prepare Tracking Table based on atual data");
+		System.out.println("  -performance               To execute performance tests of any method");
 		System.out.println("");
 		System.out.println("Remember to specify all fields in .properties file!!");
 		System.out.println("");
@@ -83,6 +85,10 @@ public class Main {
                 else
                     System.err.println("-prop requires a property file");
 
+            }
+            
+            else if (arg.equals("-performance")) {
+        		PerformanceTest.main(prop_file, args[i]);            	
             }
             
             else if (arg.equals("-h") || arg.equals("-help")) {
