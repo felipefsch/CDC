@@ -204,8 +204,9 @@ public class LogBased extends Configured implements Tool{
 		
 		// Set input path as the one with the commit log in cassandra
 		String commitLogFolder = "file://" + DatabaseDescriptor.getCommitLogLocation();
+		//String commitLogFolder = "file://" + prop.getProperty("log_based.commit_log_path");
 		SegmentInputFormat.setInputPaths(job, commitLogFolder);
-		
+
 		if (VERBOSE) {
 			System.out.println(CDC + "CommitLog file: " + commitLogFolder);
 		}

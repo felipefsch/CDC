@@ -59,7 +59,7 @@ public class LogDeserializer {
         	if (!keyspace.equals("system") && !keyspace.equals("local"))
             {
         		String strKey = Utils.toString(key);
-        		System.out.println("KS: " + keyspace + " key: " + strKey + " size: " + size);
+        		//System.out.println("KS: " + keyspace + " key: " + strKey + " size: " + size);
         		
 	            keyValueAux.setKeyspace(keyspace);	            
 	            keyValueAux.setKey(strKey);	            
