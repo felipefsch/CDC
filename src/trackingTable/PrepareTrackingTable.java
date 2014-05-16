@@ -72,7 +72,7 @@ public class PrepareTrackingTable {
 	
 	private static void startTrackingTable() throws InvalidRequestException, TException {
 		// connecting to Cassandra
-        TTransport tr = new TFramedTransport(new TSocket("localhost", 9160));
+        TTransport tr = new TFramedTransport(new TSocket(ADDRESS, Integer.parseInt(RPC_PORT)));
         TProtocol proto = new TBinaryProtocol(tr);
         
         // Cassandra thrift client
@@ -133,16 +133,20 @@ public class PrepareTrackingTable {
 		
 		List<KeySlice> keySlices = client.get_range_slices(cp, sp, kr, ConsistencyLevel.ONE);
 		
+		int numKeys = 0;
+		int numCols = 0;
 		for (KeySlice keySlice : keySlices) {
+			numKeys++;
 			byte[] key = keySlice.getKey();
-			String strKey = new String(key, "UTF-8");
+			String strKey = new String(key, Utils.UTF_8);
 			List<ColumnOrSuperColumn> colOrSuperCols = keySlice.getColumns();
 			
 			for (ColumnOrSuperColumn colOrSuperCol : colOrSuperCols) {
+				numCols++;
 				String finalValue = Utils.toString(colOrSuperCol.column.value);
 				ColumnParent parent = new ColumnParent();
 				parent.setColumn_family(TRACKING_TABLE);
-				parent.setSuper_column("up_old".getBytes("UTF-8"));
+				parent.setSuper_column(Utils.UP_OLD.getBytes("UTF-8"));
 		        Column c = new Column();//colOrSuperCol.column.name, finalValue.getBytes("UTF-8"), new Clock(colOrSuperCol.column.clock.timestamp));
 		        
 		        c.setName(colOrSuperCol.column.name);
@@ -152,15 +156,15 @@ public class PrepareTrackingTable {
 		        client.insert(Utils.toByteBuffer(strKey), parent, c, ConsistencyLevel.ONE);
 				
 		        if (VERBOSE) {
-					System.out.println(CDC + new String(key, "UTF-8") + "/" +
-							Utils.toString(colOrSuperCol.column.value) + "/" +
+					System.out.println(CDC + new String(key, Utils.UTF_8) + "/" +
+							finalValue + "/" +
 							colOrSuperCol.column.timestamp);
 		        }
 			}
 		}
 		
 		if (VERBOSE)
-			System.out.println(CDC + "Tracking table " + TRACKING_TABLE + " prepared!");
+			System.out.println(CDC + "Tracking table " + TRACKING_TABLE + " prepared! " + numKeys + " keys and " + numCols + " columns inserted.");
         
 	}
 	
@@ -189,35 +193,40 @@ public class PrepareTrackingTable {
 		
 		List<KeySlice> keySlices = client.get_range_slices(cp, sp, kr, ConsistencyLevel.ONE);
 		
+		int numKeys = 0;
+		int numCols = 0;
+		
 		for (KeySlice keySlice : keySlices) {
+			numKeys++;
 			byte[] key = keySlice.getKey();
-			String strKey = new String(key, "UTF-8");
+			String strKey = new String(key, Utils.UTF_8);
 			List<ColumnOrSuperColumn> colOrSuperCols = keySlice.getColumns();
 			
 			for (ColumnOrSuperColumn colOrSuperCol : colOrSuperCols) {				
 				for (Column column : colOrSuperCol.super_column.columns) {
+					numCols++;
 					String finalValue = Utils.toString(column.value);
 					ColumnParent parent = new ColumnParent();
 					parent.setColumn_family(TRACKING_TABLE);
-					parent.setSuper_column("up_old".getBytes("UTF-8"));
+					parent.setSuper_column(Utils.UP_OLD.getBytes(Utils.UTF_8));
 					String finalColName = Utils.toString(colOrSuperCol.super_column.name) + "/" + Utils.toString(column.name);  
 			        Column c = new Column();
 			        
-			        c.setName(colOrSuperCol.column.name);
-			        c.setValue(finalValue.getBytes("UTF-8"));
+			        c.setName(Utils.toByteBuffer(finalColName));
+			        c.setValue(finalValue.getBytes(Utils.UTF_8));
 			        c.setTimestamp(colOrSuperCol.column.timestamp);
 			        
 			        client.insert(Utils.toByteBuffer(strKey), parent, c, ConsistencyLevel.ONE);
 				}
 				
 		        if (VERBOSE) {
-					System.out.println(CDC + new String(key, "UTF-8") + "/" +
+					System.out.println(CDC + new String(key, Utils.UTF_8) + "/" +
 							Utils.toString(colOrSuperCol.column.value) + "/" +
 							colOrSuperCol.column.timestamp);
 		        }
 			}
 		}
 		if (VERBOSE)
-			System.out.println(CDC + "Tracking table prepared!");
+			System.out.println(CDC + "Tracking table " + TRACKING_TABLE + " prepared! " + numKeys + " keys and " + numCols + " columns inserted.");
 	}
 }

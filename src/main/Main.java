@@ -6,7 +6,7 @@ import schema.Create;
 import snapshotDifferential.Differential;
 import snapshotDifferential.Snapshot;
 import tableScan.TableScan;
-import trackingTable.PrepareTrackingTable;
+import trackingTable.PrepareTrackingTableMapRed;
 import trackingTable.TrackingTableMapRed;
 import auditColumn.AuditColumn;
 import auditColumn.CreateAuditColumns;
@@ -167,10 +167,10 @@ public class Main {
             	if (vflag){            		
             		System.out.println(CDC + "Creating and Preparing Tracking Table...");
                     System.out.println(CDC + "Properties loaded from: " + prop_file);
-            		PrepareTrackingTable.main(prop_file, "-verbose");
+            		PrepareTrackingTableMapRed.main(prop_file, "-verbose");
             	}
             	else
-            		PrepareTrackingTable.main(prop_file);            	
+            		PrepareTrackingTableMapRed.main(prop_file);            	
             }
             
             else if (arg.equals("-tt") || arg.equals("-trackingtable")) {
