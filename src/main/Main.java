@@ -7,7 +7,7 @@ import snapshotDifferential.Differential;
 import snapshotDifferential.Snapshot;
 import tableScan.TableScan;
 import trackingTable.PrepareTrackingTable;
-import trackingTable.TrackingTableSimple;
+import trackingTable.TrackingTableMapRed;
 import auditColumn.AuditColumn;
 import auditColumn.CreateAuditColumns;
 
@@ -177,10 +177,10 @@ public class Main {
             	if (vflag){            		
             		System.out.println(CDC + "Starting Tracking Table CDC...");
                     System.out.println(CDC + "Properties loaded from: " + prop_file);
-            		TrackingTableSimple.main(prop_file, "-verbose");
+            		TrackingTableMapRed.main(prop_file, "-verbose");
             	}
             	else
-            		TrackingTableSimple.main(prop_file);            	
+            		TrackingTableMapRed.main(prop_file);            	
             }
             
             else if (arg.equals("-triggers")) {

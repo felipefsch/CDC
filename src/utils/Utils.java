@@ -20,7 +20,11 @@ public class Utils {
 	public static final String MAPPER = "[MAP] ";
 	public static final String REDUCER = "[RED] ";
 	public static final String ERROR = "ERROR: ";
-	
+	public static final String UP_OLD = "up_old";
+	public static final String UP_NEW = "up_new";
+	public static final String INS = "ins";
+	public static final String DEL = "del";
+	public static final String UTF_8 = "UTF-8";
 	
 	/**
 	 * Set into file at current folder the last CDC cycle time. 

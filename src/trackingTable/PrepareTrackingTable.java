@@ -151,10 +151,11 @@ public class PrepareTrackingTable {
 		        
 		        client.insert(Utils.toByteBuffer(strKey), parent, c, ConsistencyLevel.ONE);
 				
-//				System.out.println(new String(key, "UTF-8"));
-//				System.out.println(new String(colOrSuperCol.column.name, "UTF-8"));
-//				System.out.println(new String(colOrSuperCol.column.value, "UTF-8"));
-//				System.out.println(colOrSuperCol.column.clock.timestamp);
+		        if (VERBOSE) {
+					System.out.println(CDC + new String(key, "UTF-8") + "/" +
+							Utils.toString(colOrSuperCol.column.value) + "/" +
+							colOrSuperCol.column.timestamp);
+		        }
 			}
 		}
 		
@@ -208,6 +209,12 @@ public class PrepareTrackingTable {
 			        
 			        client.insert(Utils.toByteBuffer(strKey), parent, c, ConsistencyLevel.ONE);
 				}
+				
+		        if (VERBOSE) {
+					System.out.println(CDC + new String(key, "UTF-8") + "/" +
+							Utils.toString(colOrSuperCol.column.value) + "/" +
+							colOrSuperCol.column.timestamp);
+		        }
 			}
 		}
 		if (VERBOSE)
