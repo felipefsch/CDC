@@ -112,6 +112,13 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	    	
 	    	CURRENT_MAINTAINING_CYCLE = System.currentTimeMillis() * 1000;
 	    	
+	    	if (IS_SUPER.equals("true")){
+	    		COLUMNS = Utils.superColumnNames(path);
+	    	}
+	    	else {
+	    		COLUMNS = Utils.standardColumnNames(path);
+	    	}
+	    	
 	        // Let ToolRunner handle generic command-line options
 	        ToolRunner.run(new Configuration(), new PrepareTrackingTableMapRed(), args);
 	    }
@@ -139,7 +146,7 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	        @Override
 	        public void map(ByteBuffer key, SortedMap<ByteBuffer, IColumn> columns, Context context) throws IOException, InterruptedException
 	        {    
-	        	try {
+	        	try {	        		
 		        	// connecting to Cassandra
 		            TTransport tr = new TFramedTransport(new TSocket(ADDRESS, Integer.parseInt(RPC_PORT)));
 		            TProtocol proto = new TBinaryProtocol(tr);
@@ -152,6 +159,8 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 		        	
 		        	Iterator<String> iterator = listColumnNames.iterator();
 		        	
+		        	String strKey = Utils.toString(key);
+		        	
 		        	while (iterator.hasNext()) {
 		        		
 		        		String colName = iterator.next();
@@ -160,8 +169,6 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 		                
 		                if (column == null)
 		                    continue;
-		                
-		    			String strKey = Utils.toString(key);
 		    			
 	    				String finalValue = Utils.toString(column.value());
 	    				ColumnParent parent = new ColumnParent();
@@ -179,9 +186,9 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	    					System.out.println(CDC + strKey + "/" + colName + "/" + 
 	    							finalValue + "/" +
 	    							column.timestamp());
-	    		        }
-		    			tr.close();
+	    		        }		    			
 		    		}
+		        	tr.close();
 	        	} catch (Exception e) {
 	        		System.err.println(e);
 	        	}
@@ -299,7 +306,7 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	        getConf().addResource(new Path(CORE_SITE));
 	        getConf().addResource(new Path(HDFS_SITE));
 
-	        Job job = new Job(getConf(), "TableScan");
+	        Job job = new Job(getConf(), PrepareTrackingTableMapRed.class.getName());
 	        job.setJarByClass(PrepareTrackingTableMapRed.class);
 	        
 	        if (IS_SUPER.equals("true")) {
@@ -313,9 +320,7 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	        		System.out.println(CDC + "Setting mapper for Standard Column Family");
 	        	
 	        	job.setMapperClass(StandardColumnsMapper.class);
-	        }
-        	
-        	job.setMapperClass(SuperColumnsMapper.class);  	
+	        }  	
 	        
 	        job.setMapOutputKeyClass(Text.class);
 	        job.setMapOutputValueClass(Text.class); 
