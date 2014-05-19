@@ -65,7 +65,7 @@ public class Utils {
 	    	
 	    	String path = props.getProperty("cdc.cycle_path");
 			
-		    if (path.equals(""))
+		    if (path.equals("no"))
 				last_cycle =  Long.parseLong(props.getProperty("cdc.last_cycle"));
 	    	
 			BufferedReader br = new BufferedReader(new FileReader(path));
