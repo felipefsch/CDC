@@ -50,7 +50,7 @@ import tableScan.TableScan.StandardColumnsMapper;
 import tableScan.TableScan.SuperColumnsMapper;
 import utils.*;
 
-public class PrepareTrackingTableMapRed extends Configured implements Tool{
+public class UpdateTrackingTableMapRed extends Configured implements Tool{
 	/*------------------------------Necessary configuration-----------------------------------------------*/
 		
 		// Necessary configuration files of hadoop
@@ -86,13 +86,9 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	    
 	    private static Properties prop;
 	    
-	    private static String PATH = "./CDC.properties";
-	    
 	    public static void main(String... args) throws Exception
 	    {	
 	    	String path = args.length > 0 ? args[0] : "./CDC.properties";
-	    	
-	    	PATH = path;
 	    	
 	    	VERBOSE = args.length > 1 && args[1].equals("-verbose") ? true : false;
 	    	
@@ -124,7 +120,7 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	    	}
 	    	
 	        // Let ToolRunner handle generic command-line options
-	        ToolRunner.run(new Configuration(), new PrepareTrackingTableMapRed(), args);
+	        ToolRunner.run(new Configuration(), new UpdateTrackingTableMapRed(), args);
 	    }
 	    
 	    public static class StandardColumnsMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, Text>
@@ -310,8 +306,8 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	        getConf().addResource(new Path(CORE_SITE));
 	        getConf().addResource(new Path(HDFS_SITE));
 
-	        Job job = new Job(getConf(), PrepareTrackingTableMapRed.class.getName());
-	        job.setJarByClass(PrepareTrackingTableMapRed.class);
+	        Job job = new Job(getConf(), UpdateTrackingTableMapRed.class.getName());
+	        job.setJarByClass(UpdateTrackingTableMapRed.class);
 	        
 	        if (IS_SUPER.equals("true")) {
 	        	if (VERBOSE)
@@ -357,11 +353,6 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	        
 	        job.waitForCompletion(true);
 	       
-	        if (VERBOSE)
-	        	System.out.println(CDC + "Saving cycle timestamp");
-	        
-	        Utils.setLastCycle(PATH, System.currentTimeMillis() * 1000);
-	        
 	        return 0;
 	    } 	
 

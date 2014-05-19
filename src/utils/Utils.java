@@ -1,6 +1,9 @@
 package utils;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -27,20 +30,60 @@ public class Utils {
 	public static final String UTF_8 = "UTF-8";
 	
 	/**
-	 * Set into file at current folder the last CDC cycle time. 
+	 * Set into file the last CDC cycle time. File path defined at .properties file. 
 	 */
-	public static void setLastCycle() {
-		
+	public static void setLastCycle(String prop_path, long timestamp) {		
+		try {
+			Properties props = new Properties();
+			FileInputStream file = new FileInputStream(prop_path);    	
+	    	props.load(file); 
+			String path = props.getProperty("cdc.cycle_path");
+			
+			PrintWriter writer = new PrintWriter(path, "UTF-8");
+			writer.println(timestamp);
+			writer.close();
+		} catch (Exception e) {
+			System.err.println(e);
+		}		
 	}
 
 	/**
-	 * Get last cycle time from current folder file.
+	 * Get last CDC cycle time. File path defined at .properties file.
+	 * If no path provided, will return cdc.last_cycle property defined at .properties.
 	 * 
 	 * @return lastCycle
 	 */
-	public static long getLastCycle() {
-				
-		return 0;
+	public static long getLastCycle(String prop_path) {
+		
+		String out_path = "";
+		long last_cycle = 0;
+		
+		try {
+			Properties props = new Properties();		
+			FileInputStream file = new FileInputStream(prop_path);    	
+	    	props.load(file); 
+	    	
+	    	String path = props.getProperty("cdc.cycle_path");
+			
+		    if (path.equals(""))
+				last_cycle =  Long.parseLong(props.getProperty("cdc.last_cycle"));
+	    	
+			BufferedReader br = new BufferedReader(new FileReader(path));
+		    try {
+		        String line = br.readLine();
+		        last_cycle = Long.parseLong(line);
+		    } 
+		    catch (Exception e) {
+		    	System.err.println(e);
+		    }
+		    finally {
+		        br.close();
+		    }
+		}
+		catch (Exception e) {
+			System.err.println(e);
+		}
+		return last_cycle;		
 	}
 	
 	public static Properties getCassandraProp(String... prop_path) throws Exception {	    	

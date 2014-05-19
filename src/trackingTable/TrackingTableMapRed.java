@@ -75,9 +75,13 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	    
 	    private static Properties prop;
 	    
+	    private static String PATH = "./CDC.properties";
+	    
 	    public static void main(String... args) throws Exception
 	    {	
 	    	String path = args.length > 0 ? args[0] : "./CDC.properties";
+	    	
+	    	PATH = path;
 	    	
 	    	VERBOSE = args.length > 1 && args[1].equals("-verbose") ? true : false;
 	    	
@@ -93,9 +97,11 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	    	COLUMN_FAMILY = prop.getProperty("tracking_table.column_family");
 	    	OUTPUT_PATH = prop.getProperty("tracking_table.hdfs_output_path");
 	    	
-	    	LAST_CYCLE = Integer.parseInt(prop.getProperty("cdc.last_cycle"));
+	    	LAST_CYCLE = Utils.getLastCycle(path); //Integer.parseInt(prop.getProperty("cdc.last_cycle"));
 	    	
-	    	CURRENT_MAINTAINING_CYCLE = System.currentTimeMillis() * 1000;
+	    	System.out.println(LAST_CYCLE);
+	    	
+	    	CURRENT_MAINTAINING_CYCLE = System.currentTimeMillis() * 1000;	    		    	
 	    	
 	        // Let ToolRunner handle generic command-line options
 	        ToolRunner.run(new Configuration(), new TrackingTableMapRed(), args);
@@ -107,7 +113,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	     *	This Mapper creates keys and respective values for super columns.
 	     *
 	     */
-	    public static class SuperColumnsMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, Text>
+	    public static class TrackingTableMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, Text>
 	    {
 	        private Text outKeyName = new Text();
 	        private Text outColumnValue = new Text();
@@ -136,12 +142,13 @@ public class TrackingTableMapRed extends Configured implements Tool{
 		        	String outputKey = "";
 		    		String outputValue = "";
 		        	
+		    		String keyName = ByteBufferUtil.string(key);
+		    		
 		        	while (iterator.hasNext()) {
 		                IColumn column = columns.get(ByteBufferUtil.bytes(iterator.next().toString()));
 		                if (column == null)
 		                    continue;                
 		                
-		                String keyName = ByteBufferUtil.string(key);          
 		                String superColumnName = ByteBufferUtil.string(column.name());
 		                
 		                Collection<IColumn> subColumns = column.getSubColumns();
@@ -237,7 +244,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
         	if (VERBOSE)
         		System.out.println(CDC + "Setting mapper for Super Column Family");
         	
-        	job.setMapperClass(SuperColumnsMapper.class);  	
+        	job.setMapperClass(TrackingTableMapper.class);  	
 	        
 	        job.setMapOutputKeyClass(Text.class);
 	        job.setMapOutputValueClass(Text.class); 
@@ -269,6 +276,11 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	        	System.out.println(CDC + "Waiting to be completed");
 	        
 	        job.waitForCompletion(true);
+	        
+	        if (VERBOSE)
+	        	System.out.println(CDC + "Writing CDC cycle timestamp");
+	        
+	        Utils.setLastCycle(PATH, CURRENT_MAINTAINING_CYCLE);
 	       
 	        return 0;
 	    } 
