@@ -67,7 +67,7 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 		// YCSB default
 		private static String KEYSPACE = "usertable";
 		private static List<String> COLUMNS = new ArrayList<String>(
-	    											Arrays.asList(Utils.DEL, Utils.INS, Utils.UP_OLD, Utils.UP_NEW));
+	    											Arrays.asList("field0", "field1"));
 		
 		private static String SOURCE_TABLE = "Grades";
 		private static String TRACKING_TABLE = "GradesTracking";
