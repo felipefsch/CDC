@@ -104,13 +104,13 @@ public class UpdateTrackingTableMapRed extends Configured implements Tool{
 	    	SOURCE_TABLE = prop.getProperty("cassandra.column_family");
 	    	OUTPUT_PATH = prop.getProperty("tracking_table.hdfs_output_path");
 	    	
-	    	LAST_CYCLE = Integer.parseInt(prop.getProperty("cdc.last_cycle"));
+	    	LAST_CYCLE = Utils.getLastCycle(path);
 	    	
 	    	IS_SUPER = prop.getProperty("cassandra.is_super_cf");
 	    	
 	    	TRACKING_TABLE = prop.getProperty("tracking_table.column_family");
 	    	
-	    	CURRENT_MAINTAINING_CYCLE = System.currentTimeMillis() * 1000;
+	    	CURRENT_MAINTAINING_CYCLE = System.currentTimeMillis();
 	    	
 	    	if (IS_SUPER.equals("true")){
 	    		COLUMNS = Utils.superColumnNames(path);

@@ -67,18 +67,19 @@ public class Utils {
 			
 		    if (path.equals("no"))
 				last_cycle =  Long.parseLong(props.getProperty("cdc.last_cycle"));
-	    	
-			BufferedReader br = new BufferedReader(new FileReader(path));
-		    try {
-		        String line = br.readLine();
-		        last_cycle = Long.parseLong(line);
-		    } 
-		    catch (Exception e) {
-		    	System.err.println(e);
-		    }
-		    finally {
-		        br.close();
-		    }
+		    else {
+				BufferedReader br = new BufferedReader(new FileReader(path));
+			    try {
+			        String line = br.readLine();
+			        last_cycle = Long.parseLong(line);
+			    } 
+			    catch (Exception e) {
+			    	System.err.println(e);
+			    }
+			    finally {
+			        br.close();
+			    }
+			}
 		}
 		catch (Exception e) {
 			System.err.println(e);

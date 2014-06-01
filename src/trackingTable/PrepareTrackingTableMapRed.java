@@ -114,7 +114,7 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	    	
 	    	TRACKING_TABLE = prop.getProperty("tracking_table.column_family");
 	    	
-	    	CURRENT_MAINTAINING_CYCLE = System.currentTimeMillis() * 1000;
+	    	CURRENT_MAINTAINING_CYCLE = System.currentTimeMillis();
 	    	
 	    	if (IS_SUPER.equals("true")){
 	    		COLUMNS = Utils.superColumnNames(path);
@@ -360,7 +360,7 @@ public class PrepareTrackingTableMapRed extends Configured implements Tool{
 	        if (VERBOSE)
 	        	System.out.println(CDC + "Saving cycle timestamp");
 	        
-	        Utils.setLastCycle(PATH, System.currentTimeMillis() * 1000);
+	        Utils.setLastCycle(PATH, System.currentTimeMillis());
 	        
 	        return 0;
 	    } 	

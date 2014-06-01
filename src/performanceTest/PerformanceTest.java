@@ -8,7 +8,7 @@ import tableScan.TableScan;
 import trackingTable.PrepareTrackingTable;
 import trackingTable.TrackingTableSimple;
 import auditColumn.AuditColumn;
-import auditColumn.CreateAuditColumns;
+import auditColumn.CreateAuditColumnsMapRed;
 
 public class PerformanceTest {
 	public static void main(String... args) throws Exception {
@@ -28,7 +28,7 @@ public class PerformanceTest {
 				
 				long elapsedTime = System.nanoTime() - startTime;
 					
-				System.out.println("Run: " + i + " time: " + elapsedTime);
+				System.out.println("Run: " + i + " ns: " + elapsedTime);
 			}        		           	
         }
         
@@ -42,7 +42,7 @@ public class PerformanceTest {
 				
 				long elapsedTime = System.nanoTime() - startTime;
 					
-				System.out.println("Run: " + i + " time: " + elapsedTime);
+				System.out.println("Run: " + i + " ns: " + elapsedTime);
 			}       	          
         }
         
@@ -56,7 +56,7 @@ public class PerformanceTest {
 				
 				long elapsedTime = System.nanoTime() - startTime;
 					
-				System.out.println("Run: " + i + " time: " + elapsedTime);
+				System.out.println("Run: " + i + " ns: " + elapsedTime);
 			}        		            	
         }
         
@@ -70,7 +70,7 @@ public class PerformanceTest {
 				
 				long elapsedTime = System.nanoTime() - startTime;
 					
-				System.out.println("Run: " + i + " time: " + elapsedTime);
+				System.out.println("Run: " + i + " ns: " + elapsedTime);
 			}        		            	
         }
         
@@ -84,7 +84,7 @@ public class PerformanceTest {
 				
 				long elapsedTime = System.nanoTime() - startTime;
 					
-				System.out.println("Run: " + i + " time: " + elapsedTime);
+				System.out.println("Run: " + i + " ns: " + elapsedTime);
 			}        	            	
         }
         
@@ -98,7 +98,7 @@ public class PerformanceTest {
 				
 				long elapsedTime = System.nanoTime() - startTime;
 					
-				System.out.println("Run: " + i + " time: " + elapsedTime);
+				System.out.println("Run: " + i + " ns: " + elapsedTime);
 			}
         }	
 	}

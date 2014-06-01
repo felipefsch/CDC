@@ -91,6 +91,8 @@ public class TableScan extends Configured implements Tool{
 	    	OUTPUT_PATH = prop.getProperty("table_scan.hdfs_output_path");
 	    	IS_SUPER = prop.getProperty("cassandra.is_super_cf");
 	    	
+	    	LAST_CYCLE = Utils.getLastCycle(path);
+	    	
 	    	if (IS_SUPER.equals("true")){
 	    		COLUMNS = Utils.superColumnNames(path);
 	    	}

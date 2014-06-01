@@ -95,7 +95,7 @@ public class AuditColumn extends Configured implements Tool{
     	OUTPUT_PATH = prop.getProperty("audit_column.hdfs_output_path");
     	IS_SUPER = prop.getProperty("cassandra.is_super_cf").equals("true") ? true : false;
     	
-    	
+    	LAST_CYCLE = Utils.getLastCycle(PROP_PATH);
     	if (IS_SUPER){
     		COLUMNS = Utils.superColumnNames(PROP_PATH);
     	}

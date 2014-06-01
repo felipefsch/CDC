@@ -10,7 +10,7 @@ import trackingTable.PrepareTrackingTableMapRed;
 import trackingTable.TrackingTableMapRed;
 import utils.Utils;
 import auditColumn.AuditColumn;
-import auditColumn.CreateAuditColumns;
+import auditColumn.CreateAuditColumnsMapRed;
 
 public class Main {
 	
@@ -77,6 +77,11 @@ public class Main {
             // use this type of check for "wordy" arguments
             if (arg.equals("-v") || arg.equals("-verbose")) {
                 System.out.println(CDC +  "Verbose mode on");
+                vflag = true;
+            }
+            
+            else if (arg.equals("-timestamp")) {
+                System.out.println(CDC +  "Current timestamp (ms): " + System.currentTimeMillis());
                 vflag = true;
             }
 
@@ -159,10 +164,10 @@ public class Main {
             	if (vflag){            		
             		System.out.println(CDC + "Creating Audit Columns...");
                     System.out.println(CDC + "Properties loaded from: " + prop_file);
-            		CreateAuditColumns.main(prop_file, "-verbose");
+            		CreateAuditColumnsMapRed.main(prop_file, "-verbose");
             	}
             	else
-            		CreateAuditColumns.main(prop_file);            	
+            		CreateAuditColumnsMapRed.main(prop_file);            	
             }
             
             else if (arg.equals("-pt") || arg.equals("-preparetracking")) {
