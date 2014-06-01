@@ -192,11 +192,11 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	    						if (subColumn.timestamp() > LAST_CYCLE
 	    								&& subColumn.timestamp() < CURRENT_MAINTAINING_CYCLE)
 	    						{
-	    							deleteSuperColumn(keyName, Utils.DEL, Utils.toString(subColumn.name()));
-	    							deleteSuperColumn(keyName, Utils.UP_OLD, Utils.toString(subColumn.name()));
-	    							
 	    							outputKey = outputDelKey(keyName, Utils.toString(subColumn.name()));
 	    							outputValue = outputValue(subColumn.value());
+	    							
+	    							deleteSuperColumn(keyName, Utils.DEL, Utils.toString(subColumn.name()));
+	    							deleteSuperColumn(keyName, Utils.UP_OLD, Utils.toString(subColumn.name()));
 	    							
 	    							if (VERBOSE)
 					                	System.out.println(CDC + "Key: " + outputKey + " value: " + outputValue);
