@@ -18,6 +18,7 @@ import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnParent;
 import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -103,7 +104,7 @@ public class CreateAuditColumnsMapRed extends Configured implements Tool{
 	     *	This Mapper creates keys and respective values for standard columns.
 	     *
 	     */
-	    public static class StandardColumnsMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, Text>
+	    public static class StandardColumnsMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, ByteBuffer, Column>
 	    {
 	        //private Text outKeyName = new Text();
 	        //private Text outColumnValue = new Text();
@@ -138,39 +139,39 @@ public class CreateAuditColumnsMapRed extends Configured implements Tool{
 	                    continue;
 	                	 	                
 	                //String columnValue = ByteBufferUtil.string(icolumn.value());                        
-	                String keyName = ByteBufferUtil.string(key);          
+	                //String keyName = ByteBufferUtil.string(key);          
 	                //String columnTimestamp = "" + icolumn.timestamp();
 	                String columnName = ByteBufferUtil.string(icolumn.name());
 	                
-	                try {
-						Cassandra.Client client = Utils.getCassandraClient(PROP_PATH);
-						client.set_keyspace(KEYSPACE);
+	                /*try {
+						//Cassandra.Client client = Utils.getCassandraClient(PROP_PATH);
+						//client.set_keyspace(KEYSPACE);
 						ColumnParent parent = new ColumnParent();
 				        parent.setColumn_family(COLUMN_FAMILY);
 				        
-				        Column column = new Column();
+				        */Column column = new Column();
 				        column.setTimestamp(icolumn.timestamp());
 				        
 				        column.setName(Utils.toByteBuffer("audit:" + columnName));
 				        
 				        column.setValue(icolumn.value());
 				        
-				        client.insert(Utils.toByteBuffer(keyName), parent, column, ConsistencyLevel.ONE);
+				        //client.insert(Utils.toByteBuffer(keyName), parent, column, ConsistencyLevel.ONE);
 				        
-		                if (VERBOSE)
+		                /*if (VERBOSE)
 		                	System.out.println(CDC + "Inserted key:" + keyName + " column: " + Utils.toString(column.name) + " timestamp: " + column.timestamp);
 				        
 					} catch (Exception e) {
 						System.out.println(CDC + "Failed to add audit column to Cassandra");
 						e.printStackTrace();
-					}
+					}*/
 	                            
 	                // Timestamp not in the key part but in value part
 	                // Key designed to follow the same pattern as the other approaches.
 	                //outKeyName.set("upsert/" + KEYSPACE + "/" + COLUMN_FAMILY + "/" + keyName + "/null/" + columnName);
 	                //outColumnValue.set(columnValue);
 	                
-	                //context.write(outKeyName, outColumnValue);
+	                context.write(key, column);
 	        	}        	           
 	        }
 	    }
@@ -279,11 +280,15 @@ public class CreateAuditColumnsMapRed extends Configured implements Tool{
 	        	job.setMapperClass(StandardColumnsMapper.class);
 	        }
 	        
-	        job.setMapOutputKeyClass(Text.class);
-	        job.setMapOutputValueClass(Text.class); 
+	        job.setMapOutputKeyClass(ByteBuffer.class);
+	        job.setMapOutputValueClass(List.class);
+	        //job.setMapOutputKeyClass(Text.class);
+	        //job.setMapOutputValueClass(Text.class); 
 	        
-	        job.setOutputKeyClass(Text.class);
-	        job.setOutputValueClass(Text.class);
+	        job.setOutputKeyClass(ByteBuffer.class);
+	        job.setOutputValueClass(List.class);
+	        //job.setOutputKeyClass(Text.class);
+	        //job.setOutputValueClass(Text.class);
 	        
 	        FileSystem fs = FileSystem.get(getConf());
 	        
@@ -301,6 +306,7 @@ public class CreateAuditColumnsMapRed extends Configured implements Tool{
 	        ConfigHelper.setInitialAddress(job.getConfiguration(), ADDRESS);
 	        ConfigHelper.setPartitioner(job.getConfiguration(), "org.apache.cassandra.dht.RandomPartitioner");
 	        ConfigHelper.setInputColumnFamily(job.getConfiguration(), KEYSPACE, COLUMN_FAMILY);
+	        ConfigHelper.setOutputColumnFamily(job.getConfiguration(), KEYSPACE, COLUMN_FAMILY);
 	        
 	        SlicePredicate predicate = new SlicePredicate().setColumn_names(columns);
 	        ConfigHelper.setInputSlicePredicate(job.getConfiguration(), predicate);
