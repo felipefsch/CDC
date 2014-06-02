@@ -14,10 +14,9 @@ import java.util.StringTokenizer;
 import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
 import org.apache.cassandra.hadoop.ConfigHelper;
-import org.apache.cassandra.thrift.Cassandra;
 import org.apache.cassandra.thrift.Column;
-import org.apache.cassandra.thrift.ColumnParent;
-import org.apache.cassandra.thrift.ConsistencyLevel;
+import org.apache.cassandra.thrift.ColumnOrSuperColumn;
+import org.apache.cassandra.thrift.Mutation;
 import org.apache.cassandra.thrift.SlicePredicate;
 import org.apache.cassandra.utils.ByteBufferUtil;
 import org.apache.hadoop.conf.Configuration;
@@ -27,6 +26,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
@@ -87,6 +87,8 @@ public class CreateAuditColumns extends Configured implements Tool{
 	    	OUTPUT_PATH = prop.getProperty("table_scan.hdfs_output_path");
 	    	IS_SUPER = prop.getProperty("cassandra.is_super_cf");
 	    	
+	    	LAST_CYCLE = Utils.getLastCycle(PROP_PATH);
+	    	
 	    	if (IS_SUPER.equals("true")){
 	    		COLUMNS = Utils.superColumnNames(PROP_PATH);
 	    	}
@@ -125,7 +127,7 @@ public class CreateAuditColumns extends Configured implements Tool{
 
 	        @Override
 	        public void map(ByteBuffer key, SortedMap<ByteBuffer, IColumn> columns, Context context) throws IOException, InterruptedException
-	        {          	
+	        {   
 	        	Iterator<String> iterator = listColumnNames.iterator();
 	        	
 	        	while (iterator.hasNext()) {
@@ -142,36 +144,99 @@ public class CreateAuditColumns extends Configured implements Tool{
 	                //String columnTimestamp = "" + icolumn.timestamp();
 	                String columnName = ByteBufferUtil.string(icolumn.name());
 	                
-	                try {
-						Cassandra.Client client = Utils.getCassandraClient(PROP_PATH);
-						client.set_keyspace(KEYSPACE);
+	                /*try {
+						//Cassandra.Client client = Utils.getCassandraClient(PROP_PATH);
+						//client.set_keyspace(KEYSPACE);
 						ColumnParent parent = new ColumnParent();
-				        parent.setColumn_family(COLUMN_FAMILY);
+				        parent.setColumn_family(COLUMN_FAMILY); */
 				        
-				        Column column = new Column();
-				        column.setTimestamp(icolumn.timestamp());
+				        long timestamp = icolumn.timestamp();
 				        
+				       /* Column column = new Column();
+				        
+				        if (timestamp <= LAST_CYCLE)					        
+					        column.setTimestamp(timestamp);
+				        else
+				        	column.setTimestamp(timestamp - 10);
+					        
 				        column.setName(Utils.toByteBuffer("audit:" + columnName));
 				        
 				        column.setValue(icolumn.value());
 				        
-				        client.insert(Utils.toByteBuffer(keyName), parent, column, ConsistencyLevel.ONE);
+				        //client.insert(Utils.toByteBuffer(keyName), parent, column, ConsistencyLevel.ONE);
 				        
-		                if (VERBOSE)
+		                /*if (VERBOSE)
 		                	System.out.println(CDC + "Inserted key:" + keyName + " column: " + Utils.toString(column.name) + " timestamp: " + column.timestamp);
 				        
-					} catch (Exception e) {
-						System.out.println(CDC + "Failed to add audit column to Cassandra");
-						e.printStackTrace();
-					}
-	                            
-	                // Timestamp not in the key part but in value part
-	                // Key designed to follow the same pattern as the other approaches.
-	                //outKeyName.set("upsert/" + KEYSPACE + "/" + COLUMN_FAMILY + "/" + keyName + "/null/" + columnName);
-	                //outColumnValue.set(columnValue);
-	                
-	                //context.write(outKeyName, outColumnValue);
+						} catch (Exception e) {
+							System.out.println(CDC + "Failed to add audit column to Cassandra");
+							e.printStackTrace();
+						}*/
+		                            
+		                // Timestamp not in the key part but in value part
+		                // Key designed to follow the same pattern as the other approaches.
+		                //outKeyName.set("upsert/" + KEYSPACE + "/" + COLUMN_FAMILY + "/" + keyName + "/null/" + columnName);
+		                //outColumnValue.set(columnValue);
+		                
+		                
+		                
+		              /*  Mutation m = new Mutation();
+		                m.setColumn_or_supercolumn(new ColumnOrSuperColumn());
+		                m.column_or_supercolumn.setColumn(column);*/
+		                
+	                	context.write(new Text(keyName), new Text(columnName + ":" + timestamp));
 	        	}        	           
+	        }
+	    }
+	    
+	    public static class ReducerToCassandra extends Reducer<Text, Text, ByteBuffer, Mutation>
+	    {
+	        private ByteBuffer outputKey;
+/*
+	        protected void setup(Reducer.Context context) throws IOException, InterruptedException
+	        {
+	            // The row key is the name of the column from which we read the text
+	            outputKey = ByteBufferUtil.bytes(context.getConfiguration().get("columnname"));
+	        }*/
+
+	        public void reduce(Text word, Iterable<Text> values, Context context) throws IOException, InterruptedException
+	        {
+	            String k = word.toString();
+	            for (Text val : values) {
+	                //sum += val.get();
+	            	//String s = val.getBytes().toString();	            	
+	            	context.write(Utils.toByteBuffer(k), getMutation(val, k));	            	
+	            }
+	            
+	        }
+
+	        // See Cassandra API (http://wiki.apache.org/cassandra/API)
+	        private static Mutation getMutation(Text value, String key)
+	        {	        	
+	        	String v = value.toString();
+	        	String colName = "audit:" + v.substring(0, v.lastIndexOf(":"));	        	
+	        	String ts = v.substring(v.lastIndexOf(":") + 1, v.length());
+	        	Long timestamp = Long.parseLong(ts);
+	        	
+	            Column c = new Column();
+	            c.setName(colName.getBytes());
+	            c.setValue(ts.getBytes());
+	            
+	        	if (timestamp <= LAST_CYCLE)					        
+			        c.setTimestamp(timestamp);
+		        else {
+		        	timestamp = LAST_CYCLE - 900;
+		        	c.setTimestamp(timestamp);
+		        }
+
+	            Mutation m = new Mutation();
+	            m.setColumn_or_supercolumn(new ColumnOrSuperColumn());
+	            m.column_or_supercolumn.setColumn(c);
+	            
+	            if (VERBOSE)
+	            	System.out.println(CDC + "Creating " + key + "/" + colName + "-" + timestamp);
+	            
+	            return m;
 	        }
 	    }
 	    
@@ -183,6 +248,12 @@ public class CreateAuditColumns extends Configured implements Tool{
 	     */
 	    public static class SuperColumnsMapper extends Mapper<ByteBuffer, SortedMap<ByteBuffer, IColumn>, Text, Text>
 	    {
+	    	
+	    	
+	    	//TODO MUST PROGRAM AS FOR STANDARD COLUMNS AND INTEGRATE WITH THE REDUCER!!!!
+	    	// THE METHOD USED HERE IS USELESS WHILE RUNNING IN A CLUSTER!
+	    	
+	    	
 	        private Text outKeyName = new Text();
 	        private Text outColumnValue = new Text();
 	        private List<String> listColumnNames = new ArrayList<String>();
@@ -279,11 +350,17 @@ public class CreateAuditColumns extends Configured implements Tool{
 	        	job.setMapperClass(StandardColumnsMapper.class);
 	        }
 	        
-	        job.setMapOutputKeyClass(Text.class);
-	        job.setMapOutputValueClass(Text.class); 
+	        job.setReducerClass(ReducerToCassandra.class);
 	        
-	        job.setOutputKeyClass(Text.class);
-	        job.setOutputValueClass(Text.class);
+	        job.setMapOutputKeyClass(Text.class);
+	        job.setMapOutputValueClass(Text.class);
+	        //job.setMapOutputKeyClass(Text.class);
+	        //job.setMapOutputValueClass(Text.class); 
+	        
+	        job.setOutputKeyClass(ByteBuffer.class);
+	        job.setOutputValueClass(Mutation.class);
+	        //job.setOutputKeyClass(Text.class);
+	        //job.setOutputValueClass(Text.class);
 	        
 	        FileSystem fs = FileSystem.get(getConf());
 	        
@@ -301,6 +378,7 @@ public class CreateAuditColumns extends Configured implements Tool{
 	        ConfigHelper.setInitialAddress(job.getConfiguration(), ADDRESS);
 	        ConfigHelper.setPartitioner(job.getConfiguration(), "org.apache.cassandra.dht.RandomPartitioner");
 	        ConfigHelper.setInputColumnFamily(job.getConfiguration(), KEYSPACE, COLUMN_FAMILY);
+	        ConfigHelper.setOutputColumnFamily(job.getConfiguration(), KEYSPACE, COLUMN_FAMILY);
 	        
 	        SlicePredicate predicate = new SlicePredicate().setColumn_names(columns);
 	        ConfigHelper.setInputSlicePredicate(job.getConfiguration(), predicate);

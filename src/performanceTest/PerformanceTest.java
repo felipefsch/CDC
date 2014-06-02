@@ -8,7 +8,7 @@ import tableScan.TableScan;
 import trackingTable.PrepareTrackingTable;
 import trackingTable.TrackingTableSimple;
 import auditColumn.AuditColumn;
-import auditColumn.CreateAuditColumnsMapRed;
+import auditColumn.CreateAuditColumns;
 
 public class PerformanceTest {
 	public static void main(String... args) throws Exception {

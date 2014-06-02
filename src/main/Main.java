@@ -10,7 +10,7 @@ import trackingTable.PrepareTrackingTableMapRed;
 import trackingTable.TrackingTableMapRed;
 import utils.Utils;
 import auditColumn.AuditColumn;
-import auditColumn.CreateAuditColumnsMapRed;
+import auditColumn.CreateAuditColumns;
 
 public class Main {
 	
@@ -164,10 +164,10 @@ public class Main {
             	if (vflag){            		
             		System.out.println(CDC + "Creating Audit Columns...");
                     System.out.println(CDC + "Properties loaded from: " + prop_file);
-            		CreateAuditColumnsMapRed.main(prop_file, "-verbose");
+            		CreateAuditColumns.main(prop_file, "-verbose");
             	}
             	else
-            		CreateAuditColumnsMapRed.main(prop_file);            	
+            		CreateAuditColumns.main(prop_file);            	
             }
             
             else if (arg.equals("-pt") || arg.equals("-preparetracking")) {
