@@ -260,8 +260,8 @@ public class AuditColumn extends Configured implements Tool{
     			}
     		}
     		
-    		String outputKey = null;
-    		String outputValue = null;
+    		String outputKey = "!";
+    		String outputValue = "!";
     		
 //			// Deletion - I cannot garantee
 //			if (effectiveTimestamp == 0) {
@@ -307,10 +307,12 @@ public class AuditColumn extends Configured implements Tool{
 				outputValue = effectiveValue;
     		}
     		
-    		if (VERBOSE)
-    			System.out.println(CDC + outputKey + " " + outputValue);
-    		
-    		context.write(new Text(outputKey), new Text(outputValue));
+    		if (!outputKey.equals("!") && !outputValue.equals("!")) {
+    			if (VERBOSE)
+        			System.out.println(CDC + outputKey + " " + outputValue);
+    			
+    			context.write(new Text(outputKey), new Text(outputValue));
+    		}
     	}
     }
 	

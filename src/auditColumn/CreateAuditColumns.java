@@ -13,6 +13,7 @@ import java.util.StringTokenizer;
 
 import org.apache.cassandra.db.IColumn;
 import org.apache.cassandra.hadoop.ColumnFamilyInputFormat;
+import org.apache.cassandra.hadoop.ColumnFamilyOutputFormat;
 import org.apache.cassandra.hadoop.ConfigHelper;
 import org.apache.cassandra.thrift.Column;
 import org.apache.cassandra.thrift.ColumnOrSuperColumn;
@@ -189,7 +190,7 @@ public class CreateAuditColumns extends Configured implements Tool{
 	        }
 	    }
 	    
-	    public static class ReducerToCassandra extends Reducer<Text, Text, ByteBuffer, Mutation>
+	    public static class ReducerToCassandra extends Reducer<Text, Text, ByteBuffer, List<Mutation>>
 	    {
 	        private ByteBuffer outputKey;
 /*
@@ -202,12 +203,13 @@ public class CreateAuditColumns extends Configured implements Tool{
 	        public void reduce(Text word, Iterable<Text> values, Context context) throws IOException, InterruptedException
 	        {
 	            String k = word.toString();
+	            List<Mutation> listMutations = new ArrayList<Mutation>();
 	            for (Text val : values) {
 	                //sum += val.get();
-	            	//String s = val.getBytes().toString();	            	
-	            	context.write(Utils.toByteBuffer(k), getMutation(val, k));	            	
+	            	//String s = val.getBytes().toString();
+	            	listMutations.add(getMutation(val, k));	            		            
 	            }
-	            
+	            context.write(Utils.toByteBuffer(k), listMutations);	            
 	        }
 
 	        // See Cassandra API (http://wiki.apache.org/cassandra/API)
@@ -362,7 +364,7 @@ public class CreateAuditColumns extends Configured implements Tool{
 	        //job.setOutputKeyClass(Text.class);
 	        //job.setOutputValueClass(Text.class);
 	        
-	        FileSystem fs = FileSystem.get(getConf());
+	        /*FileSystem fs = FileSystem.get(getConf());
 	        
 	        if (fs.exists(new Path(OUTPUT_PATH))){
 	        	if (VERBOSE)
@@ -370,9 +372,10 @@ public class CreateAuditColumns extends Configured implements Tool{
 	        	
 	        	fs.delete(new Path(OUTPUT_PATH), true);          	  
 	        }
-	        FileOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));
+	        FileOutputFormat.setOutputPath(job, new Path(OUTPUT_PATH));*/
 
 	        job.setInputFormatClass(ColumnFamilyInputFormat.class);
+	        job.setOutputFormatClass(ColumnFamilyOutputFormat.class);
 	        
 	        ConfigHelper.setRpcPort(job.getConfiguration(), RPC_PORT);
 	        ConfigHelper.setInitialAddress(job.getConfiguration(), ADDRESS);
