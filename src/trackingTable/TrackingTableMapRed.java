@@ -59,8 +59,8 @@ public class TrackingTableMapRed extends Configured implements Tool{
 		// YCSB default
 		private static String KEYSPACE = "usertable";
 	    private static String TRACKING_TABLE = "dataTracking";
-		private static List<String> COLUMNS = new ArrayList<String>(
-	    											Arrays.asList(Utils.DEL, Utils.INS, Utils.UP_OLD, Utils.UP_NEW));
+		private static List<String> SUPER_COLUMNS = new ArrayList<String>(
+	    											Arrays.asList(Utils.DEL, Utils.INS, Utils.UP_NEW, Utils.UP_OLD));
 		
 		private static long LAST_CYCLE = 0;
 		private static long CURRENT_MAINTAINING_CYCLE = 0;
@@ -144,6 +144,9 @@ public class TrackingTableMapRed extends Configured implements Tool{
 		        	
 		    		String keyName = ByteBufferUtil.string(key);
 		    		
+		    		if (VERBOSE)
+	                	System.out.println(CDC + "Key: " + keyName);		    		
+		    		
 		        	while (iterator.hasNext()) {
 		                IColumn column = columns.get(ByteBufferUtil.bytes(iterator.next().toString()));
 		                if (column == null)
@@ -153,46 +156,57 @@ public class TrackingTableMapRed extends Configured implements Tool{
 		                
 		                Collection<IColumn> subColumns = column.getSubColumns();
 		                Iterator<IColumn> subColumnIterator = subColumns.iterator();
+		                
+						if (VERBOSE)
+		                	System.out.println(CDC + "Super Column: " + superColumnName);
+		                
 		                while (subColumnIterator.hasNext()) {	                	
 		                	IColumn subColumn = subColumnIterator.next();
+		                	
+		                	String subColumnName = ByteBufferUtil.string(subColumn.name());
+		                	
+		                	Long subColumnTimestamp = subColumn.timestamp();
+		                	
+							if (VERBOSE)
+			                	System.out.println(CDC + "Sub Column: " + subColumnName);
 	
 		                	if (superColumnName.equals(Utils.UP_NEW)) {	    
-	    						if (subColumn.timestamp() > LAST_CYCLE
-	    								&& subColumn.timestamp() < CURRENT_MAINTAINING_CYCLE)
-	    						{					
+	    						/*if (subColumnTimestamp > LAST_CYCLE
+	    								&& subColumnTimestamp < CURRENT_MAINTAINING_CYCLE)
+	    						{*/					
 	    							//insertUpOld(keyName, Utils.toString(subColumn.name()),Utils.toString(subColumn.value()));
 	    							//deleteSuperColumn(keyName, Utils.UP_NEW, Utils.toString(subColumn.name()));
 	    							
-	    							outputKey = outputUpdKey(keyName, Utils.toString(subColumn.name()));
+	    							outputKey = outputUpdKey(keyName, subColumnName);
 	    							outputValue = outputValue(subColumn.value());
 	    							
 	    							if (VERBOSE)
 					                	System.out.println(CDC + "Key: " + outputKey + " value: " + outputValue);
 	    							
 	    							context.write(new Text(outputKey), new Text(outputValue));
-	    						}	    					
+	    						//}	    					
 		    				}
 		                	else if (superColumnName.equals(Utils.INS)) {
-	    						if (subColumn.timestamp() > LAST_CYCLE
-	    								&& subColumn.timestamp() < CURRENT_MAINTAINING_CYCLE)
-	    						{
+	    						/*if (subColumnTimestamp > LAST_CYCLE
+	    								&& subColumnTimestamp < CURRENT_MAINTAINING_CYCLE)
+	    						{*/
 	    							//insertUpOld(keyName, Utils.toString(subColumn.name()), Utils.toString(subColumn.value()));
 	    							//deleteSuperColumn(keyName, Utils.INS, Utils.toString(subColumn.name()));
 	    							
-	    							outputKey = outputInsKey(keyName, Utils.toString(subColumn.name()));
+	    							outputKey = outputInsKey(keyName, subColumnName);
 	    							outputValue = outputValue(subColumn.value());
 	    							
 	    							if (VERBOSE)
 					                	System.out.println(CDC + "Key: " + outputKey + " value: " + outputValue);
 	    							
 	    							context.write(new Text(outputKey), new Text(outputValue));
-	    						}		    										
+	    						//}		    										
 		    				}
 		    				else if (superColumnName.equals(Utils.DEL)) {
-	    						if (subColumn.timestamp() > LAST_CYCLE
-	    								&& subColumn.timestamp() < CURRENT_MAINTAINING_CYCLE)
-	    						{
-	    							outputKey = outputDelKey(keyName, Utils.toString(subColumn.name()));
+	    						/*if (subColumnTimestamp > LAST_CYCLE
+	    								&& subColumnTimestamp < CURRENT_MAINTAINING_CYCLE)
+	    						{*/
+	    							outputKey = outputDelKey(keyName, subColumnName);
 	    							outputValue = outputValue(subColumn.value());
 	    							
 	    							//deleteSuperColumn(keyName, Utils.DEL, Utils.toString(subColumn.name()));
@@ -202,7 +216,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
 					                	System.out.println(CDC + "Key: " + outputKey + " value: " + outputValue);
 	    							
 	    							context.write(new Text(outputKey), new Text(outputValue));
-	    						}				
+	    						//}				
 		    				}	
 		                }
 		        	}
@@ -228,7 +242,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	    	List<ByteBuffer> columns = new ArrayList<ByteBuffer>();
 	    		    	
 	    	// create string with all column names and list with bytes of all column names
-	    	for (String columnName : COLUMNS) {
+	    	for (String columnName : SUPER_COLUMNS) {
 	    		columns.add(ByteBufferUtil.bytes(columnName));
 	    		allColumnNames = columnName + " " + allColumnNames;
 	    	}
