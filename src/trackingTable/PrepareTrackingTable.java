@@ -220,7 +220,7 @@ public class PrepareTrackingTable extends Configured implements Tool{
 	        private static Mutation getMutation(String type, Text value, String key)
 	        {	        	
 	        	String v = value.toString();
-	        	String colName = v.substring(0, v.lastIndexOf(":"));
+	        	String colName = v.substring(0, v.indexOf(":"));
 	        	String colValue = v.substring(v.indexOf(":") + 1, v.lastIndexOf(":"));
 	        	String ts = v.substring(v.lastIndexOf(":") + 1, v.length());
 	        	Long timestamp = Long.parseLong(ts);

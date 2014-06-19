@@ -6,9 +6,9 @@ import schema.Create;
 import snapshotDifferential.Differential;
 import snapshotDifferential.Snapshot;
 import tableScan.TableScan;
-import trackingTable.PrepareTrackingTableMapRed;
+import trackingTable.CreateTrackingTable;
+import trackingTable.PrepareTrackingTable;
 import trackingTable.TrackingTableMapRed;
-import utils.Utils;
 import auditColumn.AuditColumn;
 import auditColumn.CreateAuditColumns;
 
@@ -46,7 +46,8 @@ public class Main {
 		System.out.println("  -p, -prop                  Set property file to be used");
 		System.out.println("  -c, -createschema          Create Cassandra Schema");
 		System.out.println("  -ca, -createaudit          Create Audit Columns to all columns of the Column Familys");
-		System.out.println("  -pt, -preparetracking      Create and prepare Tracking Table based on atual data");
+		System.out.println("  -pt, -preparetracking      Prepare Tracking Table based on atual data");
+		System.out.println("  -ct, -createtracking       Create Tracking Table");
 		System.out.println("  -ts, -tablescan            Table Scan CDC");
 		System.out.println("  -ac, -auditcolumn          Audit Column CDC");
 		System.out.println("  -lb, -logbased             Log based CDC");
@@ -170,14 +171,24 @@ public class Main {
             		CreateAuditColumns.main(prop_file);            	
             }
             
-            else if (arg.equals("-pt") || arg.equals("-preparetracking")) {
+            else if (arg.equals("-ct") || arg.equals("-createtracking")) {
             	if (vflag){            		
-            		System.out.println(CDC + "Creating and Preparing Tracking Table...");
+            		System.out.println(CDC + "Creating Tracking Table...");
                     System.out.println(CDC + "Properties loaded from: " + prop_file);
-            		PrepareTrackingTableMapRed.main(prop_file, "-verbose");
+                    CreateTrackingTable.main(prop_file, "-verbose");
             	}
             	else
-            		PrepareTrackingTableMapRed.main(prop_file);            	
+            		CreateTrackingTable.main(prop_file);            	
+            }
+            
+            else if (arg.equals("-pt") || arg.equals("-preparetracking")) {
+            	if (vflag){            		
+            		System.out.println(CDC + "Preparing Tracking Table...");
+                    System.out.println(CDC + "Properties loaded from: " + prop_file);
+            		PrepareTrackingTable.main(prop_file, "-verbose");
+            	}
+            	else
+            		PrepareTrackingTable.main(prop_file);            	
             }
             
             else if (arg.equals("-tt") || arg.equals("-trackingtable")) {

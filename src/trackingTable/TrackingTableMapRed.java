@@ -58,7 +58,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
 		
 		// YCSB default
 		private static String KEYSPACE = "usertable";
-	    private static String COLUMN_FAMILY = "data";
+	    private static String TRACKING_TABLE = "dataTracking";
 		private static List<String> COLUMNS = new ArrayList<String>(
 	    											Arrays.asList(Utils.DEL, Utils.INS, Utils.UP_OLD, Utils.UP_NEW));
 		
@@ -94,7 +94,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	    	ADDRESS = prop.getProperty("cassandra.address");
 	    	
 	    	KEYSPACE = prop.getProperty("cassandra.keyspace");
-	    	COLUMN_FAMILY = prop.getProperty("tracking_table.column_family");
+	    	TRACKING_TABLE = prop.getProperty("tracking_table.column_family");
 	    	OUTPUT_PATH = prop.getProperty("tracking_table.hdfs_output_path");
 	    	
 	    	LAST_CYCLE = Utils.getLastCycle(path); //Integer.parseInt(prop.getProperty("cdc.last_cycle"));
@@ -160,8 +160,8 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	    						if (subColumn.timestamp() > LAST_CYCLE
 	    								&& subColumn.timestamp() < CURRENT_MAINTAINING_CYCLE)
 	    						{					
-	    							insertUpOld(keyName, Utils.toString(subColumn.name()),Utils.toString(subColumn.value()));
-	    							deleteSuperColumn(keyName, Utils.UP_NEW, Utils.toString(subColumn.name()));
+	    							//insertUpOld(keyName, Utils.toString(subColumn.name()),Utils.toString(subColumn.value()));
+	    							//deleteSuperColumn(keyName, Utils.UP_NEW, Utils.toString(subColumn.name()));
 	    							
 	    							outputKey = outputUpdKey(keyName, Utils.toString(subColumn.name()));
 	    							outputValue = outputValue(subColumn.value());
@@ -176,8 +176,8 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	    						if (subColumn.timestamp() > LAST_CYCLE
 	    								&& subColumn.timestamp() < CURRENT_MAINTAINING_CYCLE)
 	    						{
-	    							insertUpOld(keyName, Utils.toString(subColumn.name()), Utils.toString(subColumn.value()));
-	    							deleteSuperColumn(keyName, Utils.INS, Utils.toString(subColumn.name()));
+	    							//insertUpOld(keyName, Utils.toString(subColumn.name()), Utils.toString(subColumn.value()));
+	    							//deleteSuperColumn(keyName, Utils.INS, Utils.toString(subColumn.name()));
 	    							
 	    							outputKey = outputInsKey(keyName, Utils.toString(subColumn.name()));
 	    							outputValue = outputValue(subColumn.value());
@@ -195,8 +195,8 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	    							outputKey = outputDelKey(keyName, Utils.toString(subColumn.name()));
 	    							outputValue = outputValue(subColumn.value());
 	    							
-	    							deleteSuperColumn(keyName, Utils.DEL, Utils.toString(subColumn.name()));
-	    							deleteSuperColumn(keyName, Utils.UP_OLD, Utils.toString(subColumn.name()));
+	    							//deleteSuperColumn(keyName, Utils.DEL, Utils.toString(subColumn.name()));
+	    							//deleteSuperColumn(keyName, Utils.UP_OLD, Utils.toString(subColumn.name()));
 	    							
 	    							if (VERBOSE)
 					                	System.out.println(CDC + "Key: " + outputKey + " value: " + outputValue);
@@ -267,7 +267,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	        ConfigHelper.setRpcPort(job.getConfiguration(), RPC_PORT);
 	        ConfigHelper.setInitialAddress(job.getConfiguration(), ADDRESS);
 	        ConfigHelper.setPartitioner(job.getConfiguration(), "org.apache.cassandra.dht.RandomPartitioner");
-	        ConfigHelper.setInputColumnFamily(job.getConfiguration(), KEYSPACE, COLUMN_FAMILY);
+	        ConfigHelper.setInputColumnFamily(job.getConfiguration(), KEYSPACE, TRACKING_TABLE);
 	        
 	        SlicePredicate predicate = new SlicePredicate().setColumn_names(columns);
 	        ConfigHelper.setInputSlicePredicate(job.getConfiguration(), predicate);
@@ -277,10 +277,10 @@ public class TrackingTableMapRed extends Configured implements Tool{
 	        
 	        job.waitForCompletion(true);
 	        
-	        if (VERBOSE)
-	        	System.out.println(CDC + "Writing CDC cycle timestamp");
+	        //if (VERBOSE)
+	        //	System.out.println(CDC + "Writing CDC cycle timestamp");
 	        
-	        Utils.setLastCycle(PATH, CURRENT_MAINTAINING_CYCLE);
+	        //Utils.setLastCycle(PATH, CURRENT_MAINTAINING_CYCLE);
 	       
 	        return 0;
 	    } 
@@ -297,7 +297,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
 		    client.set_keyspace(KEYSPACE);
 	    	
 	    	ColumnPath cp = new ColumnPath();
-	        cp.setColumn_family(COLUMN_FAMILY);
+	        cp.setColumn_family(TRACKING_TABLE);
 	        cp.setColumn(column.getBytes(Utils.UTF_8));
 	        cp.setSuper_column(superColumn.getBytes(Utils.UTF_8));
 	        // Timestamp must be the one of the deletion time indeed?
@@ -319,7 +319,7 @@ public class TrackingTableMapRed extends Configured implements Tool{
 		    client.set_keyspace(KEYSPACE);
 		    
 		    ColumnParent parent = new ColumnParent();
-		    parent.setColumn_family(COLUMN_FAMILY);
+		    parent.setColumn_family(TRACKING_TABLE);
 		    parent.setSuper_column(Utils.UP_OLD.getBytes(Utils.UTF_8));
 		    
 		    Column column = new Column();
@@ -335,21 +335,21 @@ public class TrackingTableMapRed extends Configured implements Tool{
 		 * This creates a output key for update operations.
 		 */
 		private static String outputUpdKey(String key, String subColumnName) {
-			return "upd/" + KEYSPACE + "/" + COLUMN_FAMILY + "/" + key + "/" + subColumnName;
+			return "upd/" + KEYSPACE + "/" + TRACKING_TABLE + "/" + key + "/" + subColumnName;
 		}
 		
 		/**
 		 * This creates a output key for deletion operations.
 		 */
 		private static String outputDelKey(String key, String subColumnName) {
-			return "del/" + KEYSPACE + "/" + COLUMN_FAMILY + "/" + key + "/" + subColumnName;
+			return "del/" + KEYSPACE + "/" + TRACKING_TABLE + "/" + key + "/" + subColumnName;
 		}
 		
 		/**
 		 * This creates a output key for insertion operations.
 		 */
 		private static String outputInsKey(String key, String subColumnName) {
-			return "ins/" + KEYSPACE + "/" + COLUMN_FAMILY + "/" + key + "/" + subColumnName;	
+			return "ins/" + KEYSPACE + "/" + TRACKING_TABLE + "/" + key + "/" + subColumnName;	
 		}
 		
 		/**
