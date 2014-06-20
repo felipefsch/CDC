@@ -1,6 +1,10 @@
 # This script sets the initial_token of Cassandras config file
 # You must first give a base config file with everything setted up but
 # the initial token
+#
+# A handful site to define Cassandra's initial tokens
+# http://www.geroba.com/cassandra/cassandra-token-calculator/
+
 
 HOSTS=( 1 2 4 )
 KEYS=( 1 1344 112344 )
