@@ -46,15 +46,16 @@ public class Main {
 		System.out.println("  -p, -prop                  Set property file to be used");
 		System.out.println("  -c, -createschema          Create Cassandra Schema");
 		System.out.println("  -ca, -createaudit          Create Audit Columns to all columns of the Column Familys");
-		System.out.println("  -pt, -preparetracking      Prepare Tracking Table based on atual data");
 		System.out.println("  -ct, -createtracking       Create Tracking Table");
+		System.out.println("  -pt, -preparetracking      Prepare Tracking Table based on atual data");		
 		System.out.println("  -ts, -tablescan            Table Scan CDC");
 		System.out.println("  -ac, -auditcolumn          Audit Column CDC");
 		System.out.println("  -lb, -logbased             Log based CDC");
 		System.out.println("  -tt, -trackingtable        Tracking Table CDC");
 		System.out.println("  -s, -snapshot              Snapshot creation");
 		System.out.println("  -d, -differential          Differential CDC");		
-		System.out.println("  -performance               To execute performance tests of any method");		
+		System.out.println("  -performance               To execute performance tests of any method");
+		System.out.println("  -timestamp                 Get current system timestamp");		
 		System.out.println("");
 		System.out.println("Remember to specify all fields in .properties file!!");
 		System.out.println("");
@@ -82,7 +83,7 @@ public class Main {
             }
             
             else if (arg.equals("-timestamp")) {
-                System.out.println(CDC +  "Current timestamp (ms): " + System.currentTimeMillis());
+                System.out.println("cdc.last_cycle = " + System.currentTimeMillis());
                 vflag = true;
             }
 

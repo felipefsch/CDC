@@ -168,14 +168,15 @@ public class Differential extends Configured implements Tool {
     		}
     		// If it's not in one of the preview cases, nothing happens.
     		else {
-    			key = null;
-    			outputValue = null;
+    			key = new Text("!");
+    			outputValue = new Text("!");
     		}    
     		
-    		if (VERBOSE)
-    			System.out.println(CDC + "key:" + key + " value: " + outputValue);
-    		
-    		output.collect(key, outputValue);    		
+    		if (!key.toString().equals("!") && !outputValue.equals("!")) {
+    			if (VERBOSE)
+        			System.out.println(CDC + "key:" + key + " value: " + outputValue);
+    			output.collect(key, outputValue);
+    		}
 		}
     }
 

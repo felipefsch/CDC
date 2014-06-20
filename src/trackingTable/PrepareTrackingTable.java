@@ -239,12 +239,12 @@ public class PrepareTrackingTable extends Configured implements Tool{
 	            	sColName = Utils.UP_OLD;
 	            }
 	            else {	            
-		        	if (timestamp <= LAST_CYCLE){
-		        		sColName = Utils.INS;
+		        	if (timestamp > LAST_CYCLE){
+		        		sColName = Utils.UP_NEW;
 		        	}
-			        else {
-			        	sColName = Utils.UP_NEW;
-			        }
+			        /*else {
+			        	sColName = Utils.INS;
+			        }*/
 	            }
 	            
 	            sc.setName(sColName.getBytes());
